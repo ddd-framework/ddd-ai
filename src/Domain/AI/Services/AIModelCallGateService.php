@@ -64,9 +64,10 @@ class AIModelCallGateService extends Service
     }
 
     /**
-     * Refuses a language-model call whose estimated cost does not fit the billed account's budget. Default: nothing.
+     * Refuses a language-model call whose estimated cost (null when no model is resolved) does not fit the billed
+     * account's budget. Default: nothing.
      */
-    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, MoneyAmount $estimatedCosts): void
+    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, ?MoneyAmount $estimatedCosts): void
     {
     }
 

@@ -239,7 +239,7 @@ class AIModelCallGateService extends \DDD\Domain\AI\Services\AIModelCallGateServ
         return $aiModelCall->accountBilledForAICosts !== null;
     }
 
-    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, MoneyAmount $estimatedCosts): void
+    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, ?MoneyAmount $estimatedCosts): void
     {
         if (/* the account's remaining budget is below $estimatedCosts */ false) {
             throw new AiBudgetExceededException('AI budget exhausted');

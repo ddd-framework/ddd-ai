@@ -54,7 +54,7 @@ class RecordingAIModelCallGateService extends AIModelCallGateService
         $this->recordStage(__FUNCTION__);
     }
 
-    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, MoneyAmount $estimatedCosts): void
+    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, ?MoneyAmount $estimatedCosts): void
     {
         $this->lastEstimatedCosts = $estimatedCosts;
         $this->recordStage(__FUNCTION__);
