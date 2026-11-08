@@ -161,6 +161,9 @@ trait ArgusAILanguageModelTrait
     /** @var array|null HTTP response headers from the Argus API call */
     protected ?array $httpResponseHeaders = null;
 
+    /** @var string|null Why the last load of this instance failed; null after a successful load */
+    protected ?string $lastLoadFailureReason = null;
+
     /**
      * @var string|null Runtime override of the provider-prioritization strategy for THIS egress (an
      * {@see ArgusLanguageModel}::PROVIDER_PRIORITIZATION_STRATEGY_* constant). When set, it WINS over the per-class
@@ -252,6 +255,28 @@ trait ArgusAILanguageModelTrait
     }
 
     /** @return float|null Cost in USD of the most recent load, or null if unknown */
+    /**
+     * Why the last load of this instance failed — the transport rejection, the upstream HTTP status and message, or
+     * an answer without text — or null when the last load succeeded (or none ran). A load never throws for a failed
+     * answer: check this, or `getArgusSettings()->isLoadedSuccessfully`, before using the result.
+     */
+    public function getLastLoadFailureReason(): ?string
+    {
+        return $this->lastLoadFailureReason;
+    }
+
+    /** The reason of a failed load: the call's rejection, else its non-2xx status, else `$fallbackReason` */
+    protected function describeLoadFailure(
+        mixed $callResponseData,
+        ?ArgusApiOperation $apiOperation,
+        string $fallbackReason
+    ): string {
+        if ($apiOperation?->rejectionReason !== null) {
+            return $apiOperation->rejectionReason;
+        }
+        return static::rejectionReasonForNon2xxAnswer($callResponseData, $apiOperation) ?? $fallbackReason;
+    }
+
     public function getLastCostInUSD(): ?float
     {
         return $this->aiCosts?->amount;
@@ -1308,6 +1333,7 @@ trait ArgusAILanguageModelTrait
     ): void
     {
         $this->httpResponseHeaders = $apiOperation?->responseHeaders;
+        $this->lastLoadFailureReason = null;
         // DEBUG: capture the raw response (object only — the ?object property would throw on a non-object; this guard
         // makes the shared trait safe for ANY Argus model/path). Flag-gated persist happens in performTurn.
         $this->lastRawResponse = is_object($callResponseData) ? $callResponseData : null;
@@ -1374,6 +1400,7 @@ trait ArgusAILanguageModelTrait
 
         $responseObject = $this->unwrapAIModelResponse($callResponseData);
         if (!$responseObject) {
+            $this->lastLoadFailureReason = $this->describeLoadFailure($callResponseData, $apiOperation, 'no parseable answer');
             $this->postProcessLoadResponse($callResponseData, false);
             // AI loads must not persist a transient failure (e.g. gateway 503) for the
             // full cache TTL — clear the empty entry written by postProcessLoadResponse.
@@ -1466,6 +1493,7 @@ trait ArgusAILanguageModelTrait
                 $this->postProcessLoadResponse($callResponseData, true);
                 return;
             }
+            $this->lastLoadFailureReason = $this->describeLoadFailure($callResponseData, $apiOperation, 'an answer without text');
             $this->postProcessLoadResponse($callResponseData, false);
             // AI loads must not persist a transient failure for the full cache TTL.
             $this->clearArgusCache();

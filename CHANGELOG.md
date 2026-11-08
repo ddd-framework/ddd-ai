@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.0
+
+Requires `mgamadeus/ddd-argus` ^1.3.2.
+
+- `getLastLoadFailureReason(): ?string` on the language-model trait: why the last load failed (the transport
+  rejection, the upstream HTTP status and message, or an answer without text); null after a successful load. A load
+  never throws for a failed answer; check this (or `getArgusSettings()->isLoadedSuccessfully`) before using the result.
+
 ## 3.0.0
 
 Requires `mgamadeus/ddd` ^3.14.3 and `mgamadeus/ddd-argus` ^1.3.1. A major release: the language-model and image-model

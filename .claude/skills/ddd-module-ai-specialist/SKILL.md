@@ -3,7 +3,7 @@ name: ddd-module-ai-specialist
 description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
 metadata:
   author: mgamadeus
-  version: "3.0.0"
+  version: "3.1.0"
   module: mgamadeus/ddd-ai
 ---
 
@@ -277,6 +277,9 @@ Stage order for a language model: `refuseModelCallWithoutUsageScopeOrEnvelope` �
   (Bearer towards openrouter.ai), `openRouterPassthroughApiKeyEnvName` (body `api_key` towards a gateway passthrough),
   `mandatedRefusalPrefix`.
 - `DEFAULT_ARGUS_TIMEOUT` = 300 s; failed loads are not cached; `getArgusCallKind()` = usage scope.
+- A failed answer never throws: after the load, `getLastLoadFailureReason()` names why (`http 400 from the upstream
+  call: …`, a transport rejection, `an answer without text`) and `getArgusSettings()->isLoadedSuccessfully` is false.
+  Treat that as a failure in the caller — never as an empty success.
 
 ## Image Generation
 
