@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.1
+
+- `getLastLoadFailureReason()` keeps the upstream error message when a gateway answers an upstream error with HTTP 2xx
+  and an `error` / `message` body (`no parseable answer: <message>`); 3.1.0 returned only `no parseable answer`.
+
 ## 3.1.0
 
 Requires `mgamadeus/ddd-argus` ^1.3.2.

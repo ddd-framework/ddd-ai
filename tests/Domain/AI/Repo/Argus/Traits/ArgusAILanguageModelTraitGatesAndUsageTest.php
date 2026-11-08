@@ -160,6 +160,22 @@ class ArgusAILanguageModelTraitGatesAndUsageTest extends TestCase
         self::assertNull($argusLanguageModelProbe->getLastLoadFailureReason());
     }
 
+    public function testAGatewayErrorInsideA2xxAnswerKeepsTheUpstreamMessage(): void
+    {
+        $argusLanguageModelProbe = $this->createProbe();
+        $gatewayError = json_decode('{"error":"The total text input size exceeds 8 MB","exceptionDetails":{}}');
+        $payload = [];
+        $argusApiOperation = new ArgusApiOperation($argusLanguageModelProbe, 'call-1', 'POST:/ai/openRouter/chatCompletions', $payload);
+        $argusApiOperation->responseStatusCode = 200;
+
+        $argusLanguageModelProbe->handleLoadResponse($gatewayError, $argusApiOperation);
+
+        self::assertSame(
+            'no parseable answer: The total text input size exceeds 8 MB',
+            $argusLanguageModelProbe->getLastLoadFailureReason()
+        );
+    }
+
     public function testAnAnswerWithoutTextNamesThat(): void
     {
         $argusLanguageModelProbe = $this->createProbe();

@@ -3,7 +3,7 @@
     "description": "AI model management, prompt system, and Argus AI integration traits for mgamadeus/ddd",
     "minimum-stability": "stable",
     "license": "MIT",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "authors": [
         {
             "name": "Marius-Eugen Gerdan",

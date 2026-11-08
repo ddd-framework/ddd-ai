@@ -265,7 +265,11 @@ trait ArgusAILanguageModelTrait
         return $this->lastLoadFailureReason;
     }
 
-    /** The reason of a failed load: the call's rejection, else its non-2xx status, else `$fallbackReason` */
+    /**
+     * The reason of a failed load: the call's rejection, else its non-2xx status, else `$fallbackReason` — followed by
+     * the upstream error message when the answer carries one (a gateway may answer an upstream error with HTTP 2xx and
+     * an `error` / `message` body).
+     */
     protected function describeLoadFailure(
         mixed $callResponseData,
         ?ArgusApiOperation $apiOperation,
@@ -274,7 +278,19 @@ trait ArgusAILanguageModelTrait
         if ($apiOperation?->rejectionReason !== null) {
             return $apiOperation->rejectionReason;
         }
-        return static::rejectionReasonForNon2xxAnswer($callResponseData, $apiOperation) ?? $fallbackReason;
+        $non2xxReason = static::rejectionReasonForNon2xxAnswer($callResponseData, $apiOperation);
+        if ($non2xxReason !== null) {
+            return $non2xxReason;
+        }
+        $upstreamMessage = '';
+        if (is_object($callResponseData)) {
+            $upstreamError = $callResponseData->error ?? $callResponseData->message ?? null;
+            if (is_object($upstreamError)) {
+                $upstreamError = $upstreamError->message ?? null;
+            }
+            $upstreamMessage = is_scalar($upstreamError) ? trim((string)$upstreamError) : '';
+        }
+        return $fallbackReason . ($upstreamMessage !== '' ? ': ' . mb_substr($upstreamMessage, 0, 160) : '');
     }
 
     public function getLastCostInUSD(): ?float
