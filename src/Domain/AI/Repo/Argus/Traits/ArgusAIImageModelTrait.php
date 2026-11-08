@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace DDD\Domain\AI\Repo\Argus\Traits;
 
+use DDD\Domain\AI\Entities\ModelCalls\AIModelCallUsage;
+use DDD\Domain\AI\Entities\Models\Settings\AIImageModelSetting;
 use DDD\Domain\AI\Exceptions\AiBudgetExceededException;
 use DDD\Domain\Base\Repo\Argus\Utils\ArgusApiOperation;
-use DDD\Domain\Common\Entities\Accounts\Account;
 use DDD\Domain\Common\Entities\Money\MoneyAmount;
 use DDD\Infrastructure\Exceptions\BadRequestException;
 use DDD\Infrastructure\Exceptions\InternalErrorException;
@@ -15,6 +16,11 @@ use Doctrine\DBAL\Exception;
 use InvalidArgumentException;
 use ReflectionException;
 
+/**
+ * An Argus repo backed by an image-generation model: sends `{model, prompt}`, maps the returned images, and hands the
+ * cost the gateway reports to the application's usage recorder. The gates are the eligibility stage and the image
+ * budget stage of {@see \DDD\Domain\AI\Services\AIModelCallGateService}; no usage-scope stage runs for images.
+ */
 trait ArgusAIImageModelTrait
 {
     use ArgusAILanguageModelTrait;
@@ -24,13 +30,13 @@ trait ArgusAIImageModelTrait
     public const int DEFAULT_NUMBER_OF_IMAGES = 1;
 
     /** @var int Width of the image */
-    public int $width = 1024;
+    public int $width = self::DEFAULT_WIDTH;
 
     /** @var int Height of the image */
-    public int $height = 768;
+    public int $height = self::DEFAULT_HEIGHT;
 
     /** @var int Number of images to generate */
-    public int $numberOfImages =1 ;
+    public int $numberOfImages = self::DEFAULT_NUMBER_OF_IMAGES;
 
     /**
      * @throws NotFoundException
@@ -52,7 +58,7 @@ trait ArgusAIImageModelTrait
             $this->postProcessLoadResponse($callResponseData, false);
             return;
         }
-        $loadResult = $responseObject->images ?? '';
+        $loadResult = $responseObject->images ?? [];
         if (!$loadResult) {
             $this->postProcessLoadResponse($callResponseData, false);
             return;
@@ -77,9 +83,14 @@ trait ArgusAIImageModelTrait
     protected function getLoadPayloadInternal(): ?array
     {
         $aiModel = $this->getAIModel();
-
-        if (!$this->isAIBudgetSufficientForOperation()) {
-            throw new AiBudgetExceededException('AI Operation exceeds available AI Budget');
+        $aiModelCallGateService = $this->getAIModelCallGateService();
+        $this->prepareBilledEntitiesBeforeGates();
+        $aiModelCallGateService->refuseModelCallForIneligibleBilledScope($this->buildAIModelCall());
+        if ($aiModelCallGateService->needsCostEstimateForBudgetCheck($this->buildAIModelCall())) {
+            $aiModelCallGateService->refuseImageModelCallOverBudget(
+                $this->buildAIModelCall(),
+                $this->estimateCostsOfImageModelCall(),
+            );
         }
         return [
             'body' => [
@@ -90,21 +101,23 @@ trait ArgusAIImageModelTrait
     }
 
     /**
-     * @throws NotFoundException
-     * @throws BadRequestException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * The estimated cost of this image batch ({@see AIImageModelSetting::getEstimatedCostsForImages()}); null when no
+     * model is resolved or the model carries no image price.
+     *
      * @throws ReflectionException
-     * @throws InternalErrorException
      */
-    public function isAIBudgetSufficientForOperation(): bool
+    protected function estimateCostsOfImageModelCall(): ?MoneyAmount
     {
-        return true;
+        $aiModelSettings = $this->aiModel?->settings ?? null;
+        if (!$aiModelSettings instanceof AIImageModelSetting) {
+            return null;
+        }
+        return $aiModelSettings->getEstimatedCostsForImages($this->numberOfImages, $this->width, $this->height);
     }
 
     /**
-     * Updates the costs based on Model and tokens
-     * @param float $costUsd
-     * @return void
+     * Hands the cost the image gateway reported to the application's usage recorder (no tokens for images).
+     *
      * @throws BadRequestException
      * @throws InternalErrorException
      * @throws NotFoundException
@@ -114,5 +127,10 @@ trait ArgusAIImageModelTrait
      */
     public function updateCostsForUsage(float $costUsd): void
     {
+        $this->aiCosts = new MoneyAmount($costUsd, 'USD');
+        $this->getAIModelCallUsageRecorderService()->recordModelCallUsage(
+            $this->buildAIModelCall(forUsageRecording: true),
+            new AIModelCallUsage(costs: $this->aiCosts),
+        );
     }
 }

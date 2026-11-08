@@ -13,7 +13,7 @@ namespace DDD\Domain\AI\Entities\Models\Selection;
  */
 class ModelScope
 {
-    /** The live conversational agent (ADO): tool-calling REQUIRED, interactive (speed matters), routing quality first. */
+    /** The live conversational agent: tool-calling REQUIRED, interactive (speed matters), routing quality first. */
     public const string AGENTIC = 'AGENTIC';
 
     /** Conversation-history compaction summarizer: no tool-calling, async/background (speed secondary), cost-dominant. */
@@ -22,7 +22,7 @@ class ModelScope
     /** Durable-memory curation (extract / reconcile facts): no tool-calling, structured-output quality + cost-dominant. */
     public const string MEMORY_MANAGEMENT = 'MEMORY_MANAGEMENT';
 
-    /** Latency-critical, user-blocking, NON-agentic reads — the search/memory rerank (plan 25/26): no tool-calling,
+    /** Latency-critical, user-blocking, NON-agentic reads — the search/memory rerank: no tool-calling,
      *  SPEED objective, cheap. Resolves to the fastest cheap model (e.g. gpt-oss-120b, provider-pinned to Cerebras). */
     public const string FAST_CHEAP = 'FAST_CHEAP';
 
@@ -31,7 +31,7 @@ class ModelScope
      *  sits a tier ABOVE the cost-dominant COMPACTION summarizer (CHEAP/COST). CAPABILITY over the STANDARD band. */
     public const string SUMMARIZATION = 'SUMMARIZATION';
 
-    /** Conversation ORCHESTRATOR / supervisor checkpoints (Über-ADO, plan 61): async, briefing-in/JSON-out,
+    /** Conversation ORCHESTRATOR / supervisor checkpoints (an agent supervisor): async, briefing-in/JSON-out,
      * quality-dominant — must out-think the turn models, so it selects by CAPABILITY over the STANDARD band. */
     public const string ORCHESTRATOR = 'ORCHESTRATOR';
 

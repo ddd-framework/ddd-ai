@@ -64,9 +64,15 @@ Plug LLM capabilities into any Argus entity. The trait handles:
 - Image handling (base64 data URLs for multimodal)
 - Response parsing from both API formats
 - Token counting and cost tracking
-- Budget validation
+- Gates and usage recording through `AIModelCallGateService` / `AIModelCallUsageRecorderService` (module defaults:
+  allow everything, record nothing; an application overrides them with a same-name subclass in `App\Domain\AI\Services`)
+- Responses API mode, reasoning effort, provider routing, fast-mode service tier, tool calls, 503 fallback model
+- Egress authentication from `ModelCallSettings` (optional application config `AI/modelCalls.php`)
 
 **Three abstract methods to implement:** `getUserContent()`, `getAIPromptWithParametersApplied()`, `applyLoadResult(string)`
+
+Every Chat Completions request sends `max_tokens` and `temperature` (default 0.8); `DEFAULT_ARGUS_TIMEOUT` is 300 s.
+See CHANGELOG.md for the 3.0.0 changes.
 
 ### Cost Tracking
 

@@ -1,9 +1,9 @@
 ---
 name: ddd-module-ai-specialist
-description: "Work with AI models, prompts, cost tracking and Argus AI integration from the ddd-ai module — the model catalog in config/app/AI/models.php (60+ rows with vendor, externalId/openRouterExternalId, context and price settings, speed and benchmark measurements, agentEligible/agentTier, the fast/priority service tier via supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt markdown templates with parameter substitution and project overrides, cost estimation per prompt/tokens/image, image generation, embeddings, the batch endpoints, and the trait's Gemini-vs-OpenAI payload auto-detection. Includes decision models (TypeSafe System One), which answer typed questions instead of text and are never agent-eligible. Use when adding LLM, image or embedding capabilities to entities, adding or repricing a model in the catalog, choosing a model for a scope, managing prompts, or estimating AI costs."
+description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
 metadata:
   author: mgamadeus
-  version: "1.3.0"
+  version: "3.0.0"
   module: mgamadeus/ddd-ai
 ---
 
@@ -223,7 +223,60 @@ $imageTokens = $model->calculateImageTokenCost($photo, 'auto');  // 65 low, 129/
 
 Tiered pricing supported (Gemini: different rates above `inputTierThresholdTokens`).
 
-Budget enforcement: override `isAIBudgetSufficientForOperation()` in your Argus entity. Throws `AiBudgetExceededException` (extends `ForbiddenException`).
+## Gates, budget and usage recording (3.0)
+
+The trait asks `AIModelCallGateService` before a call goes out and hands every priced answer to
+`AIModelCallUsageRecorderService`. The module defaults allow every call and record nothing; an application adds its
+policy with a subclass of the SAME name in `App\Domain\AI\Services` (the framework's service lookup returns it):
+
+```php
+namespace App\Domain\AI\Services;
+
+class AIModelCallGateService extends \DDD\Domain\AI\Services\AIModelCallGateService
+{
+    public function needsCostEstimateForBudgetCheck(AIModelCall $aiModelCall): bool
+    {
+        return $aiModelCall->accountBilledForAICosts !== null;
+    }
+
+    public function refuseModelCallOverBudget(AIModelCall $aiModelCall, MoneyAmount $estimatedCosts): void
+    {
+        if (/* the account's remaining budget is below $estimatedCosts */ false) {
+            throw new AiBudgetExceededException('AI budget exhausted');
+        }
+    }
+}
+```
+
+Stage order for a language model: `refuseModelCallWithoutUsageScopeOrEnvelope` → model resolved →
+`prepareBilledEntitiesBeforeGates()` (repo hook) → `refuseModelCallForIneligibleBilledScope` → when the attribute's
+`enforceBudget` is true and `needsCostEstimateForBudgetCheck()` answers true: `refuseModelCallWithoutBilledAccount` →
+`loadBudgetSettingsOfBilledAccount` → cost estimate → `refuseModelCallOverBudget`. A stage refuses by throwing.
+
+- Who pays: `$argusRepo->billAICostsTo($account, $entityWithinAccount)` before the load; the gate and recorder read it
+  from `AIModelCall::$accountBilledForAICosts` / `$entityWithinAccountBilledForAICosts`.
+- The recorder gets `AIModelCallUsage` (input/output/cached/cache-write/reasoning tokens, web searches, `costs`).
+- `enforceBudget: false` on the attribute skips the budget stages (infrastructure calls); usage is still recorded.
+
+## Request shape and egress (3.0)
+
+- Chat Completions: `model`, `max_tokens`, `temperature` (attribute value, else 0.8), `messages`, then
+  `response_format`, `provider`, `reasoning`, `tools`. No `max_completion_tokens`.
+- Model id: the catalog's `openRouterExternalId` towards an OpenRouter-bound endpoint (path contains `openrouter`),
+  `openrouter/<id>` towards a LiteLLM proxy, the provider-native `externalId` otherwise.
+- A Gemini model gets the Gemini-native body only towards a non-OpenRouter endpoint.
+- A declared `systemPromptName` puts the system prompt in the `system` role; the task prompt then leads the user
+  content and string user content is wrapped in `<user-data>…</user-data>`.
+- `apiMode: ArgusOpenAIApiMode::RESPONSES` builds an OpenAI Responses payload; `reasoningEffort` becomes
+  `reasoning: {effort}` towards OpenRouter, `reasoning_effort` towards OpenAI directly.
+- `preferredProviders` / `providerPrioritizationStrategy` → the OpenRouter `provider` block; `fastMode: true` sends
+  the priority service tier for models with `supportsFastMode`.
+- `fallbackAIModelName`: one retry with that model (same vendor) after a 503.
+- Egress keys come from the optional application config `AI/modelCalls.php` (`ModelCallSettings`; defaults in code,
+  the module ships no such file): `liteLlmHost`, `liteLlmApiKeyEnvName`, `openRouterApiKeyEnvName`
+  (Bearer towards openrouter.ai), `openRouterPassthroughApiKeyEnvName` (body `api_key` towards a gateway passthrough),
+  `mandatedRefusalPrefix`.
+- `DEFAULT_ARGUS_TIMEOUT` = 300 s; failed loads are not cached; `getArgusCallKind()` = usage scope.
 
 ## Image Generation
 

@@ -1320,7 +1320,7 @@ return [
         // it. Prices below were corrected the same day: OpenRouter's `/api/v1/models` now lists this slug at OpenAI's
         // full rate ($0.20 / $1.20, cached $0.02) — the half-rate default tier recorded in August was promotional.
         //
-        // Was: CHEAP tier + the ADO agent DEFAULT (owner decision 2026-08-12), on our own measurement rather than a
+        // Was: CHEAP tier + the agent DEFAULT (owner decision 2026-08-12), on our own measurement rather than a
         // published benchmark: 329-case suite, `--call` 291/329 (88.4%), `--judge` 299/329 (90.9%), both flavors
         // green on 278/329 (84.5%) — and against the same-day baseline run on identical cases, +8 cases net.
         // It sits in CHEAP because it IS the cheapest model we route: $0.0006 per warm turn measured, 6.7x below
@@ -1427,7 +1427,7 @@ return [
         ],
     ],
     AIModel::MODEL_OPENAI_GPT6_LUNA => [
-        // CHEAP tier + the ADO agent DEFAULT (AGENTIC and COMPACTION pins, owner decision 2026-09-24) — the successor
+        // CHEAP tier + the agent DEFAULT (AGENTIC and COMPACTION pins, owner decision 2026-09-24) — the successor
         // of GPT-5.6 Luna, released 2026-09-22. Same envelope (1.05M context, 128K output), same reasoning family and
         // effort levels (none / low / medium / high / xhigh / max), same modalities (text + image in, text out).
         //
@@ -1552,7 +1552,7 @@ return [
         // 2026-08-12 across the Gorilla harness (carries no Gemini past 3.1-Flash-Lite), the τ²-bench ledger
         // (`tau2: null` at Artificial Analysis), swebench.com, Vals AI and pricepertoken. Its SWE-Bench *Pro* 58.7 and
         // τ³-Banking 29.9 are NOT these benchmarks and would mislabel the datapoint / corrupt the blend's scale; both
-        // are recorded in knowledge/domain/ai/ado-agentic-evaluation-sheet.md instead.
+        // are recorded outside the catalog instead.
         'benchmarks' => [
             ['benchmark' => AIModelBenchmarks::BENCHMARK_TERMINAL_BENCH, 'score' => 78.0, 'sourceUrl' => 'https://deepmind.google/models/model-cards/gemini-3-6-flash/', 'asOf' => '2026-07'],
         ],
@@ -1639,9 +1639,9 @@ return [
 
     // ── Chinese open-weight agentic candidates (served via Western OpenRouter providers; data-routing must be
     //    pinned to Western providers before production use). Qwen3-235B + MiniMax M2 promoted to AGENT_TIER_CHEAP
-    //    after the RC ADO agentic eval (2026-06-13). Kimi K2 stays a TEST candidate (no agentTier) — STANDARD
+    //    after the agentic eval (2026-06-13). Kimi K2 stays a TEST candidate (no agentTier) — STANDARD
     //    cost band + profile-write collapse. ──
-    // ORCHESTRATOR candidates (Über-ADO supervisor): Chinese high-/mid-price frontier models — checkpoint
+    // ORCHESTRATOR candidates (agent supervisor): Chinese high-/mid-price frontier models — checkpoint
     // supervision only (agentEligible=false, never the interactive tool loop). Pricing/slugs: VERIFY on OpenRouter.
     AIModel::MODEL_MOONSHOT_KIMI_K3 => [
         'type' => AIModel::TYPE_LANGUAGE,
@@ -1757,7 +1757,7 @@ return [
         'providerFilters' => [
             'ignore' => ['google-vertex', 'google-ai-studio'],
         ],
-        'description' => 'Qwen3-235B-A22B-Instruct-2507 — multilingual instruct MoE (22B active), cheapest of the group. Chinese model served via Western OpenRouter providers (GOOGLE EXCLUDED via providerFilters — Google leaks tool-calls 30% of the time; routed to DeepInfra/AtlasCloud). CHEAP tier — promoted from test candidate after the RC ADO agentic eval (2026-06-13: cheapest + best reads of the cheap group).',
+        'description' => 'Qwen3-235B-A22B-Instruct-2507 — multilingual instruct MoE (22B active), cheapest of the group. Chinese model served via Western OpenRouter providers (GOOGLE EXCLUDED via providerFilters — Google leaks tool-calls 30% of the time; routed to DeepInfra/AtlasCloud). CHEAP tier — promoted from test candidate after the agentic eval (2026-06-13: cheapest + best reads of the cheap group).',
         'settings' => [
             'maxTokens' => 262144,
             'maxInputTokens' => 262144,
@@ -1821,7 +1821,7 @@ return [
         'externalId' => 'glm-5.2',
         'openRouterExternalId' => 'z-ai/glm-5.2',
         'isReasoningModel' => true,
-        'description' => 'GLM-5.2 (Z.ai) — open-weight agentic MoE, strongest open model for long-horizon coding + tool use (SWE-bench Pro 62.1, Terminal-Bench 2.1 81.0, MCP-Atlas 76.8), ~1M context, text-only, native parallel tool calls, reasoning efforts high/xhigh. Chinese model served via Western OpenRouter providers. STANDARD tier — pending the RC ADO agentic eval (single + judge).',
+        'description' => 'GLM-5.2 (Z.ai) — open-weight agentic MoE, strongest open model for long-horizon coding + tool use (SWE-bench Pro 62.1, Terminal-Bench 2.1 81.0, MCP-Atlas 76.8), ~1M context, text-only, native parallel tool calls, reasoning efforts high/xhigh. Chinese model served via Western OpenRouter providers. STANDARD tier — pending the agentic eval (single + judge).',
         'settings' => [
             'maxTokens' => 1048576,
             'maxInputTokens' => 1048576,

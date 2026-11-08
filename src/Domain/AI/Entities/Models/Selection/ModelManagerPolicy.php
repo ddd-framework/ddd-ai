@@ -7,7 +7,7 @@ namespace DDD\Domain\AI\Entities\Models\Selection;
 use DDD\Domain\Base\Entities\ValueObject;
 
 /**
- * Declarative model-selection policy (plan 08 §2) — the knobs {@see \DDD\Domain\AI\Services\AIModelsService} honors
+ * Declarative model-selection policy — the knobs {@see \DDD\Domain\AI\Services\AIModelsService} honors
  * when picking a model from the scored catalog: preferred tier band, soft vendor preference, optional cost ceiling,
  * interactivity, tool-calling requirement, and whether the curated agent-loop classification constrains the choice.
  * A DDD ValueObject (freely constructable, incl. unit tests).
@@ -31,7 +31,7 @@ class ModelManagerPolicy extends ValueObject
     /**
      * @var bool Whether the selected model MUST support native tool-calling (the agentic default). Set false for
      *      NON-agentic scopes (compaction summary, memory/conversation-search rerank) where the model never calls
-     *      a tool — otherwise the tool-calling hard gate wrongly excludes fast non-tool models (plan 28 §5).
+     *      a tool — otherwise the tool-calling hard gate wrongly excludes fast non-tool models.
      */
     public bool $requiresToolCalling;
 

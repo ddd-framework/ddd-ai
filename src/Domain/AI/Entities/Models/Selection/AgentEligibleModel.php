@@ -7,7 +7,7 @@ namespace DDD\Domain\AI\Entities\Models\Selection;
 use DDD\Domain\Base\Entities\ValueObject;
 
 /**
- * One AIModel the ADO agent may run on — a language model that is tool-calling capable, agent-eligible, and rated
+ * One AIModel the agent may run on — a language model that is tool-calling capable, agent-eligible, and rated
  * ({@see \DDD\Domain\AI\Services\AIModelsService::getAgentEligibleModels()}). The element type of
  * {@see AgentEligibleModels}. Carries just what the admin model picker needs to label a choice (name + its
  * {@see ModelTier} + the agentic intelligence score + speed + blended cost), NOT the full {@see \DDD\Domain\AI\Entities\Models\AIModel}.

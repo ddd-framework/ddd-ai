@@ -306,7 +306,7 @@ class AIModelsService extends Service
         return $aiModel;
     }
 
-    // ==== Model selection (plan 08, Part A) ====================================================================
+    // ==== Model selection ====================================================================
     // Picks the model for a {@see ModelManagerPolicy} / {@see ModelScope} from the catalog using the curated
     // per-model `agentTier` flag, the call's hard constraints (tool-calling, cost ceiling, interactive speed,
     // context window) and a price/performance/speed Pareto ranking. The pure pipeline ({@see selectCandidate()})
@@ -342,8 +342,8 @@ class AIModelsService extends Service
     /**
      * Scope → PINNED default model (TIER-INDEPENDENT). A scope in this map is NOT resolved by the price-tier heuristic
      * in {@see buildScopeContext()}; its default is a NAMED model chosen on merit (an eval gate), because the scope is
-     * its own eligibility dimension, not a price tier. ORCHESTRATOR (Über-ADO supervisor, plan 61): MiniMax M3 — the
-     * supervisor-eval-gate winner (0% wrong-decision at the lowest cost). A consumer overrides it per call (the ADO
+     * its own eligibility dimension, not a price tier. ORCHESTRATOR (an agent supervisor): MiniMax M3 — the
+     * supervisor-eval-gate winner (0% wrong-decision at the lowest cost). A consumer overrides it per call (the agent
      * supervisor's per-conversation `orchestratorModelNameOverride`). The scope's `buildScopeContext` tuple is only the
      * FALLBACK, used when the pinned model is absent/removed from the catalog.
      *
@@ -400,7 +400,7 @@ class AIModelsService extends Service
     {
         // [tier, interactive, objective, requiresToolCalling, appliesAgentLoopClassification]. FAST_CHEAP does NOT use
         // the agent-loop classification — it selects across the WHOLE catalog under a cost ceiling so an
-        // agent-ineligible-but-fast model (gpt-oss-120b @ Cerebras) can win, ranked by raw throughput (plan 28 §5).
+        // agent-ineligible-but-fast model (gpt-oss-120b @ Cerebras) can win, ranked by raw throughput.
         // 6th element = requiresAgentEligible (DECOUPLED from appliesAgentLoopClassification): MEMORY_MANAGEMENT keeps
         // the agentTier filter (stays in the CHEAP band) but does NOT require agentEligible — its op is structured-JSON
         // extract/reconcile, not the interactive tool-calling agent, so a strong cheap model held out of the live agent
@@ -411,7 +411,7 @@ class AIModelsService extends Service
             // MEMORY_MANAGEMENT selects over the hand-vetted agent-CHEAP band (appliesAgentLoopClassification = true) by
             // CAPABILITY — the memory curator's extract (type/scope classification) and reconcile (ADD/UPDATE/INVALIDATE/
             // CONFLICT) decisions are quality-dominant, so it wants the SMARTEST cheap model, not the whole-catalog
-            // throughput pick. This resolves to the same model as AGENTIC (Qwen3-235B — RC eval: better memory extract
+            // throughput pick. This resolves to the same model as AGENTIC (Qwen3-235B — eval: better memory extract
             // type/scope classification than the throughput pick gpt-oss-120b, AND cheaper $0.09 vs $0.20/1M; the op is
             // async so raw throughput is irrelevant). Non-interactive + no tool-calling required (memory ops are plain
             // JSON-output language ops). It is therefore NO LONGER lock-stepped with FAST_CHEAP.
@@ -419,7 +419,7 @@ class AIModelsService extends Service
             // FAST_CHEAP = the non-agentic, no-tool-calling SPEED pick over the WHOLE cheap catalog under the cost
             // ceiling, ranked by throughput (its best model, gpt-oss-120b @ Cerebras, sits outside the agent-CHEAP band).
             ModelScope::FAST_CHEAP => [ModelTier::CHEAP, true, ModelObjective::SPEED, false, false, false],
-            // ORCHESTRATOR (Über-ADO supervisor, plan 61): async checkpoint calls — briefing in, JSON verdict out.
+            // ORCHESTRATOR (an agent supervisor): async checkpoint calls — briefing in, JSON verdict out.
             // The scope is TIER-INDEPENDENT — its default is a PINNED model ({@see SCOPE_PINNED_DEFAULT_MODELS} = M3,
             // the eval-gate winner), so getModelForScope short-circuits before this tuple. This tuple is only the
             // FALLBACK when the pinned model is absent: a quality pick (CAPABILITY) with no tool calling and no
@@ -510,7 +510,7 @@ class AIModelsService extends Service
             // Hard eligibility gates: overall agentic fitness (live-test disqualifications — fabricators /
             // non-chainers) is required for agent-classified scopes; native tool-calling only when the policy demands
             // it (agentic scopes). A NON-agentic scope (FAST_CHEAP rerank, compaction, memory) sets
-            // requiresToolCalling=false, so a fast non-tool model stays eligible (plan 28 §5).
+            // requiresToolCalling=false, so a fast non-tool model stays eligible.
             if ($policy->requiresAgentEligible && !$candidate->agentEligible) {
                 continue;
             }

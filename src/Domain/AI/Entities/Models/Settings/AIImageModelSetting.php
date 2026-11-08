@@ -17,4 +17,19 @@ class AIImageModelSetting extends AIModelSetting
 {
     /** @var MoneyAmount|null Cost per generated image */
     public ?MoneyAmount $costsPerImageInUSD = null;
+
+    /**
+     * The estimated cost of generating `$numberOfImages` images of `$width` × `$height` pixels: the raw pixel volume
+     * (3 bytes per pixel) in megabytes times the per-image price. Null when the model carries no per-image price.
+     */
+    public function getEstimatedCostsForImages(int $numberOfImages, int $width, int $height): ?MoneyAmount
+    {
+        if ($this->costsPerImageInUSD === null) {
+            return null;
+        }
+        return new MoneyAmount(
+            $numberOfImages * ($height * $width * 3) / (1024 * 1024) * $this->costsPerImageInUSD->amount,
+            'USD'
+        );
+    }
 }

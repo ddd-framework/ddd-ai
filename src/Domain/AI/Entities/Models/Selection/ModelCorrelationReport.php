@@ -7,7 +7,7 @@ namespace DDD\Domain\AI\Entities\Models\Selection;
 use DDD\Domain\Base\Entities\ValueObject;
 
 /**
- * Result of the P0.0 calibration run (plan 08 §7 P0.0): per-model agentic-score vs eval pass-rate, plus the overall
+ * Result of the calibration run: per-model agentic-score vs eval pass-rate, plus the overall
  * rank-correlation that tells us whether the agentic score actually predicts our task success — i.e. whether the
  * tier bands rest on something real. A DDD ValueObject.
  */

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace DDD\Domain\AI\Entities\Models\Selection;
 
 /**
- * The in-band optimization objective a tier uses to pick among its Pareto-frontier qualifiers
- * (plan 08 §2.1). String constants, config-keyed. Not final — extensible.
+ * The in-band optimization objective a tier uses to pick among its Pareto-frontier qualifiers.
+ * String constants, config-keyed. Not final — extensible.
  *
  *  - CAPABILITY: highest agentic-intelligence score (cost as tie-break) — PREMIUM.
  *  - COST:       cheapest blended $/1M above the floor (value-per-$ as tie-break) — STANDARD / CHEAP.

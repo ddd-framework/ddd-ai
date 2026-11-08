@@ -7,7 +7,7 @@ namespace DDD\Domain\AI\Entities\Models\Selection;
 use DDD\Domain\Base\Entities\ValueObject;
 
 /**
- * The audit record of one selection (plan 08 §2.1 step 5). Returned by the pure pipeline and logged; carries the
+ * The audit record of one selection. Returned by the pure pipeline and logged; carries the
  * full reason so a pick is traceable (and so the fleet-mis-route guard can diff picks before/after a catalog change).
  * A DDD ValueObject.
  */

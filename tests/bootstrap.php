@@ -15,6 +15,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 $moduleRoot = dirname(__DIR__);
 require $moduleRoot . '/vendor/autoload.php';
 
+if (!defined('APP_ROOT_DIR')) {
+    define('APP_ROOT_DIR', $moduleRoot);
+}
+
 class TestContainer extends Container
 {
     protected array $testInstances = [];
