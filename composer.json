@@ -3,7 +3,12 @@
     "description": "AI model management, prompt system, and Argus AI integration traits for mgamadeus/ddd",
     "minimum-stability": "stable",
     "license": "MIT",
-    "version": "3.1.1",
+    "homepage": "https://github.com/ddd-framework/ddd-ai",
+    "support": {
+        "issues": "https://github.com/ddd-framework/ddd-ai/issues",
+        "source": "https://github.com/ddd-framework/ddd-ai"
+    },
+    "version": "3.1.2",
     "authors": [
         {
             "name": "Marius-Eugen Gerdan",

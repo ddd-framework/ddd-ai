@@ -1,6 +1,6 @@
 # mgamadeus/ddd-ai
 
-AI model management, prompt system, and Argus AI integration traits for the [mgamadeus/ddd](https://github.com/mgamadeus/ddd) framework.
+AI model management, prompt system, and Argus AI integration traits for the [mgamadeus/ddd](https://github.com/ddd-framework/ddd) framework.
 
 ## Installation
 
@@ -37,7 +37,7 @@ Override any prompt by placing a file at the same path in your project's `config
 
 ### Environment Variables
 
-The AI module itself requires no environment variables. The underlying Argus module needs `ARGUS_API_ENDPOINT` configured (see [ddd-argus](https://github.com/mgamadeus/ddd-argus)).
+The AI module itself requires no environment variables. The underlying Argus module needs `ARGUS_API_ENDPOINT` configured (see [ddd-argus](https://github.com/ddd-framework/ddd-argus)).
 
 AI batch services require the OpenRouter/OpenAI API keys to be configured in the Argus batch gateway.
 
@@ -142,4 +142,4 @@ Argus clients authenticate automatically using the account specified by:
 CLI_DEFAULT_ACCOUNT_ID_FOR_CLI_OPERATIONS=1
 ```
 
-See [ddd-argus](https://github.com/mgamadeus/ddd-argus) for the full security configuration example.
+See [ddd-argus](https://github.com/ddd-framework/ddd-argus) for the full security configuration example.

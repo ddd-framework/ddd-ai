@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.2
+
+- The repository moved to the ddd-framework organisation: github.com/ddd-framework. Links updated; no code changes.
+
 ## 3.1.1
 
 - `getLastLoadFailureReason()` keeps the upstream error message when a gateway answers an upstream error with HTTP 2xx
