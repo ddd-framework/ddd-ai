@@ -63,6 +63,19 @@ class AILanguageModelSetting extends AIModelSetting
      */
     public ?PromptCacheWritePrices $promptCacheWritePrices = null;
 
+    /**
+     * @var string|null The wire API an agent speaks to this model: one of {@see AIModel::CATALOG_AGENT_WIRE_APIS}, in
+     * any case. Null = Chat Completions. Read through {@see AIModel::getAgentWireApi()}, which answers the default for
+     * an unknown value.
+     */
+    public ?string $agentWireApi = null;
+
+    /**
+     * @var string|null The `reasoning.context` an agent sends to this model: one of {@see AIModel::REASONING_CONTEXTS}.
+     * Null = none is sent. Read through {@see AIModel::getAgentReasoningContext()}.
+     */
+    public ?string $agentReasoningContext = null;
+
     /** @var MoneyAmount|null Flat fee per web search tool invocation */
     public ?MoneyAmount $costsPerWebSearchCall = null;
 

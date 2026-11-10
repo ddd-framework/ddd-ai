@@ -1,9 +1,9 @@
 ---
 name: ddd-module-ai-specialist
-description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
+description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One), usage envelopes (AIUsageEnvelopesService, budget bypass, booked costs). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, grouping AI calls of a request or job, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
 metadata:
   author: mgamadeus
-  version: "3.1.0"
+  version: "3.2.0"
   module: mgamadeus/ddd-ai
 ---
 
@@ -257,6 +257,42 @@ Stage order for a language model: `refuseModelCallWithoutUsageScopeOrEnvelope` �
   from `AIModelCall::$accountBilledForAICosts` / `$entityWithinAccountBilledForAICosts`.
 - The recorder gets `AIModelCallUsage` (input/output/cached/cache-write/reasoning tokens, web searches, `costs`).
 - `enforceBudget: false` on the attribute skips the budget stages (infrastructure calls); usage is still recorded.
+
+## Usage envelopes, budget bypass and booked costs (3.2)
+
+An envelope groups every AI call made while it is open (one request, one job, one turn); envelopes nest.
+`AIUsageEnvelopesService` holds them for the process — fetch it from the container only (one shared instance):
+
+```php
+/** @var AIUsageEnvelopesService $aIUsageEnvelopesService */
+$aIUsageEnvelopesService = DDDService::instance()->getService(AIUsageEnvelopesService::class);
+$envelope = $aIUsageEnvelopesService->openEnvelope($accountId, 'ENVELOPE.MY.WORK', AIUsageInitiator::MESSENGER);
+try {
+    // the AI calls
+} finally {
+    $aIUsageEnvelopesService->closeEnvelope($envelope);
+}
+```
+
+- Scopes start with `ENVELOPE.` (`WithAIEnvelope::ENVELOPE_SCOPE_PREFIX`). The `WithAIEnvelope` attribute only
+  DECLARES the scope of a class or method; the application (or a module) opens the envelope from it.
+- **Budget bypass:** `grantBudgetBypassForCurrentEnvelope(AIBudgetBypassGrant::forReason(…))` — inherited by every
+  envelope opened inside; `grantBudgetBypassUntilRestored()` + `restoreBudgetBypassGrant()` in `finally`;
+  `grantBudgetBypassForTheProcess()` for a console command. The grant lifts the cap only, the spend is still booked.
+- **Booked costs of one piece of work:** `$recording = startRecordingBookedCosts()` … `stopRecordingBookedCosts($recording)`
+  in `finally`; the usage log calls `recordBookedCost($usageScope, $costInUSD)`. `AIUsageBookedCosts` holds the total,
+  the count and `scopeBookedCosts` (one `AIUsageScopeBookedCost` per scope). A booked amount goes to the innermost
+  open recording only.
+- The base persists nothing. An application overrides `persistEnvelopeOpening()` (returns the envelope id),
+  `persistEnvelopeClosing()`, `isEnvelopeScope()`, `isBookedCostCountedElsewhere()` (default: config
+  `AI.usageScopesCountedElsewhere`) in a same-name subclass; more attribution than an account = a subclass of
+  `AIUsageEnvelopeContext` opened with `openEnvelopeForContext()`.
+- A Messenger worker empties the service before every consumed job (it is a worker state resetter) — never reset it
+  in a handler.
+
+Agent settings in the model catalog: `settings.agentWireApi` (`chatCompletions` / `responses`) and
+`settings.agentReasoningContext` (`all_turns` / `current_turn` / `auto`), read with `AIModel::getAgentWireApi()` /
+`getAgentReasoningContext()`; an unknown value is logged and answers the default.
 
 ## Request shape and egress (3.0)
 

@@ -23,6 +23,8 @@ use DDD\Domain\Common\Entities\MediaItems\GenericMediaItemContent;
 use DDD\Domain\Common\Entities\MediaItems\Photo;
 use DDD\Infrastructure\Exceptions\BadRequestException;
 use DDD\Infrastructure\Exceptions\InternalErrorException;
+use DDD\Infrastructure\Services\DDDService;
+use Throwable;
 use DDD\Infrastructure\Validation\Constraints\Choice;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -1138,5 +1140,105 @@ class AIModel extends Entity
         $cleanedText = preg_replace($pattern, '$1', $input);
         return $cleanedText;
     }
+    // ============================================================
+    // Agent egress: wire API and reasoning context per model (catalog `settings` keys)
+    // ============================================================
+
+    /** The OpenAI Chat-Completions API (`/chat/completions`). */
+    public const string AGENT_WIRE_API_CHAT_COMPLETIONS = 'chatCompletions';
+
+    /** The OpenAI Responses API (`/responses`). */
+    public const string AGENT_WIRE_API_RESPONSES = 'responses';
+
+    /** @var string[] The wire APIs a model's catalog entry may name. */
+    public const array CATALOG_AGENT_WIRE_APIS = [self::AGENT_WIRE_API_CHAT_COMPLETIONS, self::AGENT_WIRE_API_RESPONSES];
+
+    /** Every reasoning item the request carries is rendered, earlier turns' included. */
+    public const string REASONING_CONTEXT_ALL_TURNS = 'all_turns';
+
+    /** Only the reasoning items since the newest user message are rendered. */
+    public const string REASONING_CONTEXT_CURRENT_TURN = 'current_turn';
+
+    /** The provider picks per model. */
+    public const string REASONING_CONTEXT_AUTO = 'auto';
+
+    /** @var string[] The `reasoning.context` values the OpenAI / OpenRouter APIs accept. */
+    public const array REASONING_CONTEXTS = [self::REASONING_CONTEXT_ALL_TURNS, self::REASONING_CONTEXT_CURRENT_TURN, self::REASONING_CONTEXT_AUTO];
+
+    /**
+     * The wire API an agent speaks to this model by default: the catalog's `settings.agentWireApi`
+     * ({@see AILanguageModelSetting::$agentWireApi}). Absent = {@see self::AGENT_WIRE_API_CHAT_COMPLETIONS}; an unknown
+     * value too (logged as a warning).
+     *
+     * @return string One of {@see self::CATALOG_AGENT_WIRE_APIS}
+     */
+    public function getAgentWireApi(): string
+    {
+        $agentWireApi = $this->settings instanceof AILanguageModelSetting ? $this->settings->agentWireApi : null;
+        if ($agentWireApi === null) {
+            return static::AGENT_WIRE_API_CHAT_COMPLETIONS;
+        }
+        $canonicalAgentWireApi = static::canonicalAgentWireApi($agentWireApi);
+        if ($canonicalAgentWireApi === null) {
+            $this->logUnknownAgentSetting('agentWireApi', $agentWireApi, 'the agent speaks Chat Completions');
+            return static::AGENT_WIRE_API_CHAT_COMPLETIONS;
+        }
+        return $canonicalAgentWireApi;
+    }
+
+    /**
+     * The `reasoning.context` an agent pins for this model: the catalog's `settings.agentReasoningContext`
+     * ({@see AILanguageModelSetting::$agentReasoningContext}). Null when the entry names none, or names an unknown
+     * value (logged as a warning) — then the request carries no `reasoning.context`.
+     *
+     * @return string|null One of {@see self::REASONING_CONTEXTS}
+     */
+    public function getAgentReasoningContext(): ?string
+    {
+        $agentReasoningContext = $this->settings instanceof AILanguageModelSetting ? $this->settings->agentReasoningContext : null;
+        if ($agentReasoningContext === null) {
+            return null;
+        }
+        if (!in_array($agentReasoningContext, static::REASONING_CONTEXTS, true)) {
+            $this->logUnknownAgentSetting('agentReasoningContext', $agentReasoningContext, 'the agent sends no reasoning.context');
+            return null;
+        }
+        return $agentReasoningContext;
+    }
+
+    /**
+     * @param string|null $value `chatCompletions` / `responses` in any case, with surrounding blanks
+     * @return string|null The constant of {@see self::CATALOG_AGENT_WIRE_APIS}; null for anything else
+     */
+    public static function canonicalAgentWireApi(?string $value): ?string
+    {
+        $normalized = strtolower(trim((string)$value));
+        foreach (static::CATALOG_AGENT_WIRE_APIS as $agentWireApi) {
+            if ($normalized === strtolower($agentWireApi)) {
+                return $agentWireApi;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Logs a catalog `settings` value the agent egress does not know. A read without a container still answers.
+     *
+     * @param string $settingName
+     * @param string $settingValue
+     * @param string $consequence What the agent does instead
+     * @return void
+     */
+    protected function logUnknownAgentSetting(string $settingName, string $settingValue, string $consequence): void
+    {
+        try {
+            DDDService::instance()->getLogger()->warning(
+                '[AIModel] Unknown settings.' . $settingName . ' in the model catalog — ' . $consequence,
+                ['model' => $this->name ?? null, $settingName => $settingValue]
+            );
+        } catch (Throwable) {
+        }
+    }
+
     //public static function estimateCost(int $inputTokens, int $ouputTokens, string $model)
 }

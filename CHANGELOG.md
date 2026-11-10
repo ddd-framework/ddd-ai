@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.2.0
+
+Requires mgamadeus/ddd ^3.19.
+
+- `AIUsageEnvelopesService`: the open AI usage envelopes of the process (nesting, `openEnvelope()` /
+  `closeEnvelope()`), the AI-budget bypass grants riding on them (`AIBudgetBypassGrant`, restore as
+  `AIBudgetBypassGrantRestore`) and recordings of booked costs (`startRecordingBookedCosts()`, `AIUsageBookedCosts`
+  with one `AIUsageScopeBookedCost` per usage scope). The base keeps everything in memory; an application persists
+  envelopes by overriding `persistEnvelopeOpening()` / `persistEnvelopeClosing()`, and decides `isEnvelopeScope()` /
+  `isBookedCostCountedElsewhere()` (config `AI.usageScopesCountedElsewhere`). The service is a worker state resetter:
+  a Messenger worker empties it before every consumed job.
+- `AIUsageEnvelopeContext`, `AIUsageInitiator`, the `WithAIEnvelope` attribute (declares the envelope scope of a class
+  or method; the application or a module opens the envelope from it).
+- Exceptions: `MissingAIEnvelopeException`, `MissingAIScopeException`, `AIScopeNotEligibleException` (wire code
+  `AI_SCOPE_NOT_ELIGIBLE`), `AIModelCallFailedException`, `AIModelCallTransportFailedException`.
+- Model catalog: `settings.agentWireApi` (`chatCompletions` / `responses`) and `settings.agentReasoningContext`
+  (`all_turns` / `current_turn` / `auto`) on `AILanguageModelSetting`, read through `AIModel::getAgentWireApi()` and
+  `getAgentReasoningContext()` (an unknown value is logged and answers the default).
+
 ## 3.1.2
 
 - The repository moved to the ddd-framework organisation: github.com/ddd-framework. Links updated; no code changes.
