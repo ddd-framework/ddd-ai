@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.1
+
+- The model catalog's `settings.agentWireApi` and `settings.agentReasoningContext` reach the model: `AIModelsService`
+  did not read them, so `AIModel::getAgentWireApi()` answered Chat Completions and `getAgentReasoningContext()` null
+  for every model.
+
 ## 3.2.0
 
 Requires mgamadeus/ddd ^3.19.

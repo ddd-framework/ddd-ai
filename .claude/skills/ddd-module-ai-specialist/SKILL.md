@@ -3,7 +3,7 @@ name: ddd-module-ai-specialist
 description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One), usage envelopes (AIUsageEnvelopesService, budget bypass, booked costs). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, grouping AI calls of a request or job, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
 metadata:
   author: mgamadeus
-  version: "3.2.0"
+  version: "3.2.1"
   module: mgamadeus/ddd-ai
 ---
 

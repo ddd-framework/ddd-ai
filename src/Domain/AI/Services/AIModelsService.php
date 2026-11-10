@@ -245,6 +245,14 @@ class AIModelsService extends Service
                 $aiModelSetting->promptCacheMode = (string)$settings['promptCacheMode'];
             }
 
+            if (isset($settings['agentWireApi'])) {
+                $aiModelSetting->agentWireApi = (string)$settings['agentWireApi'];
+            }
+
+            if (isset($settings['agentReasoningContext'])) {
+                $aiModelSetting->agentReasoningContext = (string)$settings['agentReasoningContext'];
+            }
+
             $promptCacheWritePriceMultipliers = $settings['promptCacheWritePriceMultipliers'] ?? null;
             if (is_array($promptCacheWritePriceMultipliers) && $promptCacheWritePriceMultipliers !== []) {
                 $aiModelSetting->promptCacheWritePrices = new PromptCacheWritePrices();
