@@ -1426,6 +1426,42 @@ return [
             ],
         ],
     ],
+    AIModel::MODEL_OPENAI_GPT6_1_SOL => [
+        // Upgrade of GPT-6 Sol, below GPT-6 Astra. OpenRouter (`/api/v1/models`, checked 2026-11-12, listed since
+        // 2026-09-29): $2.00 / $10.00 per 1M, cached input $0.10 (half of GPT-6 Sol's), cache write $2.50 (1.25x);
+        // above 272K prompt tokens $4.00 / $15.00 (the threshold tier below). Batch is half.
+        //
+        // No agentTier and no benchmark: no weighted agentic benchmark is catalogued for it yet, so it is not offered
+        // as an agent model; text work (translations, extraction) picks it by name.
+        //
+        // FAST MODE: not verified (OpenRouter lists no service_tier parameter for it, and no one-request check was
+        // run), so it keeps the default — no tier field is sent. Flag it only after the check described at GPT-6 Luna.
+        'type' => AIModel::TYPE_LANGUAGE,
+        'vendor' => AIModel::VENDOR_OPENAI,
+        'externalId' => 'gpt-6.1-sol',
+        'openRouterExternalId' => 'openai/gpt-6.1-sol',
+        'isReasoningModel' => true,
+        'hasVisionCapabilities' => true,
+        'description' => 'OpenAI GPT-6.1 Sol: upgrade of GPT-6 Sol, below GPT-6 Astra, for agentic coding, computer use and document-heavy professional work. 1.05M context, 128K output. Text+image, reasoning.',
+        'settings' => [
+            'maxTokens' => 1178000,
+            'maxInputTokens' => 1050000,
+            'maxOutputTokens' => 128000,
+            'maxPracticallyUsableInputTokens' => 525000,
+            'costsPer1000InputTokensInUSD' => 0.002,
+            'costsPer1000OuputTokensInUSD' => 0.01,
+            'costsPer1000CachedInputTokensInUSD' => 0.0001,
+            'inputTierThresholdTokens' => 272000,
+            'costsPer1000InputTokensInUSDAboveThreshold' => 0.004,
+            'costsPer1000OutputTokensInUSDAboveThreshold' => 0.015,
+            // breakpoint caching like GPT-6 Sol: a write costs 1.25x the input rate (30 min), 2.5x with ttl 12h
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_EXPLICIT_BREAKPOINTS,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_TWELVE_HOURS => 2.5,
+            ],
+        ],
+    ],
     AIModel::MODEL_OPENAI_GPT6_LUNA => [
         // CHEAP tier + the agent DEFAULT (AGENTIC and COMPACTION pins, owner decision 2026-09-24) — the successor
         // of GPT-5.6 Luna, released 2026-09-22. Same envelope (1.05M context, 128K output), same reasoning family and

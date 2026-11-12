@@ -3,7 +3,7 @@ name: ddd-module-ai-specialist
 description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One), usage envelopes (AIUsageEnvelopesService, budget bypass, booked costs). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, grouping AI calls of a request or job, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
 metadata:
   author: mgamadeus
-  version: "3.2.1"
+  version: "3.3.0"
   module: mgamadeus/ddd-ai
 ---
 
@@ -112,6 +112,7 @@ $model->settings->maxInputTokens;  // 1050000
 
 **Key model constants** (the catalog is the source of truth — read `config/app/AI/models.php` before quoting a price):
 - `MODEL_OPENAI_GPT6_SOL` -- PREMIUM tier, reasoning + vision, 1.05M context
+- `MODEL_OPENAI_GPT6_1_SOL` -- upgrade of GPT-6 Sol, no agent tier (picked by name, e.g. app UI translations); no fast mode
 - `MODEL_OPENAI_GPT6_LUNA` -- CHEAP tier and the pinned AGENTIC / COMPACTION default
 - `MODEL_OPENAI_GPT5_6_LUNA` -- superseded 2026-09-24, kept without a tier (historical eval numbers refer to it)
 - `MODEL_GOOGLE_GEMINI_3_5_FLASH`, `MODEL_ZAI_GLM_5_2`, `MODEL_MINIMAX_M3` -- other tier/scope picks
@@ -144,7 +145,7 @@ and echoed by OpenRouter). Whether the tier exists and what it costs is catalog 
 flag is true, and multiplies an ESTIMATED cost by the factor when the provider reported no cost of its own.
 
 Flag a model only after one request with the tier set, reading the echoed tier and the cost — never by family
-analogy (GPT-6 Luna is verified; GPT-6 Sol is not, and keeps the default). `FastModeCatalogTest` pins both cases.
+analogy (GPT-6 Luna is verified; GPT-6 Sol and GPT-6.1 Sol are not, and keep the default). `FastModeCatalogTest` pins both cases.
 
 ### Retiring a model — a stored name must keep resolving
 

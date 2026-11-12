@@ -30,11 +30,13 @@ class FastModeCatalogTest extends TestCase
      */
     public function testAModelWithoutTheKeysKeepsTheSafeDefault(): void
     {
-        $gpt6Sol = (new AIModelsService())->getAIModelByName(AIModel::MODEL_OPENAI_GPT6_SOL);
+        foreach ([AIModel::MODEL_OPENAI_GPT6_SOL, AIModel::MODEL_OPENAI_GPT6_1_SOL] as $modelName) {
+            $aiModel = (new AIModelsService())->getAIModelByName($modelName);
 
-        $this->assertNotNull($gpt6Sol);
-        $this->assertFalse($gpt6Sol->supportsFastMode);
-        $this->assertNull($gpt6Sol->fastModePriceMultiplier);
+            $this->assertNotNull($aiModel, $modelName);
+            $this->assertFalse($aiModel->supportsFastMode, $modelName);
+            $this->assertNull($aiModel->fastModePriceMultiplier, $modelName);
+        }
     }
 
     /** The hydration casts: an integer factor in a config row becomes the float the cost estimate multiplies with. */

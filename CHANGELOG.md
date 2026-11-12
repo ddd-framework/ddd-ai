@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.0
+
+- Model catalog: OpenAI GPT-6.1 Sol (`AIModel::MODEL_OPENAI_GPT6_1_SOL`, OpenRouter `openai/gpt-6.1-sol`): reasoning +
+  vision, 1.05M context, 128K output; $2.00 / $10.00 per 1M, cached input $0.10, above 272K prompt tokens
+  $4.00 / $15.00. No agent tier (no weighted agentic benchmark catalogued yet) and no fast mode (not verified).
+
 ## 3.2.1
 
 - The model catalog's `settings.agentWireApi` and `settings.agentReasoningContext` reach the model: `AIModelsService`

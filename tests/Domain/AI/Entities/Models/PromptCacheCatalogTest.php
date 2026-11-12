@@ -38,7 +38,7 @@ class PromptCacheCatalogTest extends TestCase
 
     public function testTheBreakpointModelsCarryModeAndWritePricesThroughTheHydration(): void
     {
-        foreach ([AIModel::MODEL_OPENAI_GPT5_6_LUNA, AIModel::MODEL_OPENAI_GPT6_LUNA, AIModel::MODEL_OPENAI_GPT6_SOL] as $modelName) {
+        foreach ([AIModel::MODEL_OPENAI_GPT5_6_LUNA, AIModel::MODEL_OPENAI_GPT6_LUNA, AIModel::MODEL_OPENAI_GPT6_SOL, AIModel::MODEL_OPENAI_GPT6_1_SOL] as $modelName) {
             $aiModel = (new AIModelsService())->getAIModelByName($modelName);
 
             $this->assertNotNull($aiModel, $modelName);
