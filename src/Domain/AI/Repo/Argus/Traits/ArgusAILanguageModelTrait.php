@@ -1045,7 +1045,8 @@ trait ArgusAILanguageModelTrait
             ];
             $body = $this->applyServiceTierToRequestBody($body, $aiModel);
 
-            return $this->applyEgressAuthentication(['body' => $body]);
+            $this->lastRequestPayload = $this->applyEgressAuthentication(['body' => $body]);
+            return $this->lastRequestPayload;
         }
 
         // --- Google Gemini vendor path --- (never towards an OpenRouter-bound endpoint: OpenRouter takes the Chat
@@ -1133,7 +1134,8 @@ trait ArgusAILanguageModelTrait
                 $body['generation_config']['response_mime_type'] = 'application/json';
             }
 
-            return $this->applyEgressAuthentication(['body' => $body]);
+            $this->lastRequestPayload = $this->applyEgressAuthentication(['body' => $body]);
+            return $this->lastRequestPayload;
         }
 
         if ($this->usesOpenAIResponsesApi($aiModel) && !$this->forcesOpenAIChatCompletionPayload()) {
@@ -1142,7 +1144,8 @@ trait ArgusAILanguageModelTrait
                 argusLanguageModel: $argusLanguageModel,
                 userContentHasCompleteFormat: $userContentHasCompleteFormat,
             );
-            return $this->applyEgressAuthentication(['body' => $body]);
+            $this->lastRequestPayload = $this->applyEgressAuthentication(['body' => $body]);
+            return $this->lastRequestPayload;
         }
 
         // --- OpenAI Chat Completions vendor path (default) ---

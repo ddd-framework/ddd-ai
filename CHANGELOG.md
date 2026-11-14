@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.1
+
+- `ArgusAILanguageModelTrait::$lastRequestPayload` holds the payload of the last call on every request shape: the
+  Perplexity, Gemini (`generation_config`) and OpenAI Responses API bodies set it like the Chat Completions body. Before,
+  those three left it unset, so it read null or the payload of an earlier Chat Completions call of the same object.
+
 ## 3.4.0
 
 - Console commands in `DDD\Symfony\Commands\AI\`, registered without configuration; an application replaces one by a
