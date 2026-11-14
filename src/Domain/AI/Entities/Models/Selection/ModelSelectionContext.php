@@ -78,6 +78,8 @@ class ModelSelectionContext extends ValueObject
             'maxCost=' . ($this->policy->maxBlendedCostPer1MUsd !== null ? (string)$this->policy->maxBlendedCostPer1MUsd : '-'),
             'interactive=' . ($this->policy->interactive ? '1' : '0'),
             'toolCalling=' . ($this->policy->requiresToolCalling ? '1' : '0'),
+            'agentLoopClassification=' . ($this->policy->appliesAgentLoopClassification ? '1' : '0'),
+            'agentEligible=' . ($this->policy->requiresAgentEligible ? '1' : '0'),
             'minTier=' . ($this->minTier ?? '-'),
             'minSpeed=' . ($this->minSpeedScore !== null ? (string)$this->minSpeedScore : '-'),
             'reqInputTokens=' . ($this->requiredInputTokens !== null ? (string)$this->requiredInputTokens : '-'),

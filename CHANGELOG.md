@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.4.0
+
+- Console commands in `DDD\Symfony\Commands\AI\`, registered without configuration; an application replaces one by a
+  subclass that repeats `#[AsCommand]` with the same name (`FrameworkCommandsYieldPass` of `mgamadeus/ddd`):
+  - `app:ai-model:tier-picks [--vendor=…]`: the AIModelsService pick per tier and per scope and the Pareto frontier.
+    A scope with a pinned default (AGENTIC, COMPACTION, ORCHESTRATOR) is printed as "pinned default of the scope"
+    without a cost; `getModelForScope()` records no decision for it, so the decision of the previous selection is not
+    shown in its row. An unknown `--vendor` fails the command.
+  - `app:ai-models:provider-endpoints <model>`: the OpenRouter providers serving a catalog model or a raw
+    `author/model` id (tool support, uptime, price, quantization), cheapest first; `--tools-only`, `--min-uptime`,
+    `--json`. A raw id of another shape is refused before any request.
+- `ModelTierOptionTrait`: `--model`, `--tier`, `--vendor` for a command that runs a language model, and
+  `resolveEffectiveModelName()` (explicit model, else the tier's pick with the vendor as soft preference, else null).
+  `addModelTierOptions()` keeps a `--model` the command declared before; an unknown tier or vendor throws
+  `InvalidOptionException`.
+- `ModelSelectionContext::uniqueKey()` includes `appliesAgentLoopClassification` and `requiresAgentEligible`: two
+  contexts that differ only there no longer share a cached pick.
+- Skill: the default compaction threshold per context window (`effectiveContextTokens`) and the console commands.
+
 ## 3.3.0
 
 - Model catalog: OpenAI GPT-6.1 Sol (`AIModel::MODEL_OPENAI_GPT6_1_SOL`, OpenRouter `openai/gpt-6.1-sol`): reasoning +

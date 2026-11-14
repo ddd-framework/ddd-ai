@@ -27,6 +27,10 @@ src/
 |   +-- OpenAIService.php                              [Direct OpenAI HTTP client]
 |   +-- OpenRouterService.php                          [Multi-vendor gateway client]
 +-- Presentation/Api/Batch/AI/BatchAIController.php    [4 batch endpoints]
++-- Symfony/Commands/AI/
+|   +-- ModelTierOptionTrait.php                       [--model / --tier / --vendor and the model they select]
+|   +-- ModelTierPicksCommand.php                      [app:ai-model:tier-picks]
+|   +-- AIModelProviderEndpointsCommand.php            [app:ai-models:provider-endpoints]
 +-- Modules/AI/AIModule.php
 config/app/AI/
 +-- models.php                                         [60+ model definitions with pricing]
@@ -96,6 +100,28 @@ Tiered pricing supported (e.g., Gemini: different rates above 200K tokens).
 | `POST /ai/openRouter/embeddings` | OpenRouter embeddings |
 
 Secured with `ROLE_SUPER_ADMIN`.
+
+## Console Commands
+
+The commands live in `DDD\Symfony\Commands\AI\` and are registered without configuration (the module's classes are
+autoconfigured services; `#[AsCommand]` tags them). Both read the model catalog only; neither touches a database.
+
+| Command | Purpose |
+|---------|---------|
+| `app:ai-model:tier-picks [--vendor=GOOGLE]` | The AIModelsService pick per tier, per scope (a pinned scope default is named as such) and the Pareto frontier. Run it before and after a catalog change and compare. |
+| `app:ai-models:provider-endpoints <catalog name\|author/model> [--tools-only] [--min-uptime=99] [--json]` | The OpenRouter providers serving a model (tool support, uptime, price, quantization), cheapest first, from OpenRouter's public endpoints API. |
+
+`ModelTierOptionTrait` gives a command that runs a language model `--model`, `--tier` and `--vendor`:
+`addModelTierOptions()` in `configure()` (it keeps a `--model` the command declared before), then
+`resolveEffectiveModelName($input)` — an explicit `--model` wins, else `--tier` selects through
+`AIModelsService::selectModel()` with `--vendor` as soft preference, else null (the caller's default). An unknown tier
+or vendor throws `InvalidOptionException`. `writeModelSelection()` prints the source and the decision.
+
+**Replacing a command in an application:** subclass it and **repeat** `#[AsCommand(name: …)]` with the same name (an
+attribute is not inherited). `FrameworkCommandsYieldPass` of `mgamadeus/ddd` then removes the module's service for that
+name. Override points: `getAIModelsService()`, `getTiers()`, `getScopes()` (tier picks); `fetchProviderEndpointsJson()`,
+`writeProviderProbeHint()` (provider endpoints, the hint prints nothing by default); `createTierSelectionPolicy()`,
+`describeDefaultModelSource()` (trait).
 
 ## Environment Variables
 

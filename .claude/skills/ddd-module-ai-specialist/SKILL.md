@@ -1,9 +1,9 @@
 ---
 name: ddd-module-ai-specialist
-description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, eligibility, cost ledger via same-name App subclasses), request shapes (max_tokens + temperature, Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), image generation, embeddings, batch endpoints, decision models (TypeSafe System One), usage envelopes (AIUsageEnvelopesService, budget bypass, booked costs). Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, grouping AI calls of a request or job, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
+description: "Work with AI models, prompts, cost tracking and Argus AI integration in the ddd-ai module: the model catalog (config/app/AI/models.php: vendor, openRouterExternalId, prices, speed and benchmarks, agentEligible/agentTier, supportsFastMode), AIModelsService lookup and scope-based selection, AIPrompt templates with project overrides, cost estimation, the gate and usage-recorder services (budget, cost ledger via same-name App subclasses), request shapes (Responses API, reasoning effort, provider routing, fast tier, 503 fallback, egress keys from AI/modelCalls.php), images, embeddings, batch endpoints, decision models, usage envelopes (AIUsageEnvelopesService, budget bypass, booked costs), compaction threshold per model, commands tier-picks and provider-endpoints. Use when adding LLM, image or embedding capabilities to entities, enforcing an AI budget or recording AI costs, grouping AI calls of a request or job, adding or repricing a model, choosing a model for a scope, managing prompts, or estimating AI costs."
 metadata:
   author: mgamadeus
-  version: "3.3.0"
+  version: "3.4.0"
   module: mgamadeus/ddd-ai
 ---
 
@@ -165,6 +165,24 @@ wants to re-derive a historical cost must keep its own record of the rate it pai
 Removing a public constant is a BREAKING change — release it as a major version, and check the consuming apps for
 references first (`grep -rn MODEL_<NAME>`): a removed constant is a fatal error, not a graceful failure.
 
+### Compaction threshold per model (`effectiveContextTokens`)
+
+`AIModel::$effectiveContextTokens` is the token count from which a consumer reduces a conversation's context (the
+reliable-reasoning length, well below the hard window). A catalog row sets it with `'effectiveContextTokens' => …`;
+without one, `AIModelsService` derives it from the context window (`defaultEffectiveContextTokensForWindow()`):
+
+| Context window | Default threshold |
+|---|---|
+| ≥ 1,000,000 | 128,000 |
+| ≥ 400,000 | 96,000 |
+| ≥ 250,000 | 64,000 |
+| ≥ 190,000 | 50,000 |
+| ≥ 120,000 | 64,000 |
+| smaller | 60 % of the window, at least 8,000 |
+
+Every value is capped at 80 % of the window. The values are absolute counts, not fractions: accuracy degrades with the
+raw token count, not with the share of the window used. No window (null or 0) → no threshold.
+
 **Benchmarks and agent eligibility:** `getAgentEligibleModels()` keeps only models whose `agenticScore` is not null,
 i.e. that carry at least one benchmark from `AGENTIC_WEIGHTS` (BFCL, τ²-bench, GAIA, SWE-bench Verified, AgentBench,
 Terminal-Bench). A brand-new model without one of those is invisible to tier selection. Never file a non-map
@@ -188,6 +206,16 @@ while `agentEligible` is false. Going through the catalog is what makes the call
 enforced, counted against the account's cap, logged per call, and priced from this row.
 
 **Types:** `TYPE_LANGUAGE`, `TYPE_IMAGE`, `TYPE_AUDIO`, `TYPE_EMBEDDINGS`
+
+## Console commands (3.4)
+
+`app:ai-model:tier-picks [--vendor=…]` prints the pick per tier, per scope (a pinned scope default is named as such)
+and the Pareto frontier — run it before and after a catalog change and compare. `app:ai-models:provider-endpoints
+<catalog name|author/model>` lists the OpenRouter providers of a model (tool support, uptime, price), cheapest first.
+`ModelTierOptionTrait` gives a command that runs a model `--model` / `--tier` / `--vendor`
+(`addModelTierOptions()`, `resolveEffectiveModelName()`, `writeModelSelection()`). An application replaces a command
+with a subclass that repeats `#[AsCommand]` with the same name. Details and override points: `AGENTS.md`, "Console
+Commands".
 
 ## AIPrompt (Template System)
 
