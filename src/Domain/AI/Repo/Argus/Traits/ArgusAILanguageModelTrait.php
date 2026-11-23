@@ -1210,9 +1210,11 @@ trait ArgusAILanguageModelTrait
                 $return['body']['tool_choice'] = $chatCompletionToolChoice;
             }
             // Explicit parallel-call opt-in: OpenAI defaults it to true, but some providers cap the model to ONE tool
-            // call per response unless the flag is sent. OpenRouter drops the param for providers that do not list it
-            // in supported_parameters, so sending it unconditionally is a safe no-op elsewhere.
-            $return['body']['parallel_tool_calls'] = true;
+            // call per response unless the flag is sent. OpenRouter ignores it for providers that do not list it — unless
+            // `require_parameters` is set, then no endpoint is left: the catalog switches it off for such models.
+            if ($aiModel?->sendsParallelToolCalls() ?? true) {
+                $return['body']['parallel_tool_calls'] = true;
+            }
         }
 
         $return['body'] = $this->applyPromptCacheRoutingToChatCompletionBody($return['body'], $aiModel);

@@ -38,11 +38,22 @@ class ArgusLanguageModelProbe extends ValueObject
 
     public ?string $appliedResultText = null;
 
+    /** @var array<int, array<string, mixed>> Chat-Completions tool schemas the probe offers (none by default) */
+    public array $probeChatCompletionTools = [];
+
     public ?AIModelCallGateService $replacedGateService = null;
 
     public ?AIModelCallUsageRecorderService $replacedUsageRecorderService = null;
 
     /** Uses another endpoint than the class declares */
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function getChatCompletionTools(): array
+    {
+        return $this->probeChatCompletionTools;
+    }
+
     public function useLoadEndpoint(string $loadEndpoint): static
     {
         $this->getArgusSettings()->argusLoad->loadEndpoint = $loadEndpoint;

@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.4.5
+
+- Model catalog: `supportsParallelToolCalls` (bool, explicit per language model, overridable per model in the host's
+  `config/app/AI/models.php`; read through `AIModel::sendsParallelToolCalls()`). A request with tools carries
+  `parallel_tool_calls: true` only when it is not false. Kimi K3.1 Pro: false — none of its OpenRouter endpoints accepts
+  the parameter, and with its catalog `requireParameters` OpenRouter answered every tool call with 404 "No endpoints found
+  that can handle the requested parameters". Every other language model with tools: true (as sent until now). Undecided
+  (null, sent as before): Perplexity Sonar and Typesafe JEV 1.13 (no tools), GPT-5 Search API (no OpenRouter route),
+  o3-mini, o4-mini and Grok 4.1 Fast (no longer listed on OpenRouter).
+
 ## 3.4.4
 
 - Model catalog: Moonshot AI Kimi K3.1 Pro (`AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO`, OpenRouter

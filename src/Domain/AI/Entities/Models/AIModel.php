@@ -656,6 +656,7 @@ class AIModel extends Entity
     /** @var string No prompt cache the caller can steer: send no cache fields */
     public const string PROMPT_CACHE_MODE_NONE = 'none';
 
+
     /** @var string A prompt-cache write with the provider's default lifetime (30 min on OpenAI, 5 min on Anthropic) */
     public const string PROMPT_CACHE_WRITE_TTL_DEFAULT = 'default';
 
@@ -723,6 +724,15 @@ class AIModel extends Entity
      *      picks freely. See {@see AIModelProviderFilters}.
      */
     public ?AIModelProviderFilters $providerFilters = null;
+
+    /**
+     * @var bool|null Whether a request with tools carries `parallel_tool_calls: true` (Chat Completions and Responses).
+     *      False for a model whose allowed providers do not accept the parameter: with OpenRouter's
+     *      `require_parameters` the request would find no endpoint. Explicit per catalog model; a host overrides it in
+     *      its own `config/app/AI/models.php`. Null = not decided (sent, as before); read through
+     *      {@see self::sendsParallelToolCalls()}.
+     */
+    public ?bool $supportsParallelToolCalls = null;
 
     /**
      * @var AILanguageModelSetting|AIImageModelSetting The Settings of the Model.
@@ -939,6 +949,12 @@ class AIModel extends Entity
     public function getEstimatedImageInputTokens(): int
     {
         return 1100;
+    }
+
+    /** Whether a request with tools carries `parallel_tool_calls` (false only when the catalog says the model does not accept it) */
+    public function sendsParallelToolCalls(): bool
+    {
+        return $this->supportsParallelToolCalls !== false;
     }
 
     /** The catalog's prompt-cache mode for this model; {@see self::PROMPT_CACHE_MODE_NONE} when it declares none. */
