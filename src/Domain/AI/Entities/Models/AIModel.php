@@ -511,6 +511,17 @@ class AIModel extends Entity
     public const string MODEL_OPENAI_GPT6_1_SOL = 'OPENAI.GPT6_1_SOL';
 
     /**
+     * @var string OpenAI GPT-6.2 Sol Model
+     * @description Upgrade of GPT-6.1 Sol (released 2026-11-17), below GPT-6.2 Astra: an efficient, versatile model for
+     *      everyday work. Reasoning + vision, 1.05M context, 128K output.
+     * @usage A quality model for text work, picked by name; not agent-eligible until a weighted benchmark is
+     *      catalogued.
+     * @notes Reasoning model. $2.00/$10.00 per 1M, cached input $0.10 (OpenRouter = OpenAI list, same as 6.1 Sol);
+     *      above 272K prompt tokens $4.00/$15.00. Batch half. No verified fast tier.
+     */
+    public const string MODEL_OPENAI_GPT6_2_SOL = 'OPENAI.GPT6_2_SOL';
+
+    /**
      * @var string OpenAI GPT-6 Luna Model
      * @description Budget tier of the GPT-6 family (released 2026-09-22), successor of GPT-5.6 Luna: high-volume chat,
      *      classification, extraction and agentic tool-calling. Reasoning + vision, 1.05M context, 128K output.

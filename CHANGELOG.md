@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.4.3
+
+- Model catalog: OpenAI GPT-6.2 Sol (`AIModel::MODEL_OPENAI_GPT6_2_SOL`, OpenRouter `openai/gpt-6.2-sol`), released
+  2026-11-17: reasoning + vision, 1.05M context, 128K output; $2.00 / $10.00 per 1M, cached input $0.10, above 272K
+  prompt tokens $4.00 / $15.00 (same as GPT-6.1 Sol, which stays). No agent tier (no weighted agentic benchmark
+  catalogued) and no fast mode (not verified).
+
 ## 3.4.1
 
 - `ArgusAILanguageModelTrait::$lastRequestPayload` holds the payload of the last call on every request shape: the

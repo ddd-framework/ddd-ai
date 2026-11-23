@@ -30,7 +30,7 @@ class FastModeCatalogTest extends TestCase
      */
     public function testAModelWithoutTheKeysKeepsTheSafeDefault(): void
     {
-        foreach ([AIModel::MODEL_OPENAI_GPT6_SOL, AIModel::MODEL_OPENAI_GPT6_1_SOL] as $modelName) {
+        foreach ([AIModel::MODEL_OPENAI_GPT6_SOL, AIModel::MODEL_OPENAI_GPT6_1_SOL, AIModel::MODEL_OPENAI_GPT6_2_SOL] as $modelName) {
             $aiModel = (new AIModelsService())->getAIModelByName($modelName);
 
             $this->assertNotNull($aiModel, $modelName);

@@ -1462,6 +1462,44 @@ return [
             ],
         ],
     ],
+    AIModel::MODEL_OPENAI_GPT6_2_SOL => [
+        // Upgrade of GPT-6.1 Sol, below GPT-6.2 Astra, released 2026-11-17. OpenRouter (`/api/v1/models`, checked
+        // 2026-11-23): 1.05M context, 128K max output, text + image + file in, reasoning / reasoning_effort, tools,
+        // response_format / structured outputs; $2.00 / $10.00 per 1M, cached input $0.10, cache write $2.50 (1.25x);
+        // above 272K prompt tokens $4.00 / $15.00 (the threshold tier below). OpenAI's pricing page lists the same
+        // standard row; batch is half. Prices identical to GPT-6.1 Sol.
+        //
+        // RESPONSES API: no agentWireApi here (catalog default, like GPT-6.1 Sol). OpenRouter documents its Responses
+        // API as a stateless, OpenAI-compatible endpoint for multiple models without a per-model list; not verified
+        // with a live request for this id, so a host that sets agentWireApi=responses checks it once.
+        //
+        // No agentTier and no benchmark (none catalogued yet); text work picks it by name. FAST MODE: not verified.
+        'type' => AIModel::TYPE_LANGUAGE,
+        'vendor' => AIModel::VENDOR_OPENAI,
+        'externalId' => 'gpt-6.2-sol',
+        'openRouterExternalId' => 'openai/gpt-6.2-sol',
+        'isReasoningModel' => true,
+        'hasVisionCapabilities' => true,
+        'description' => 'OpenAI GPT-6.2 Sol: upgrade of GPT-6.1 Sol, below GPT-6.2 Astra, an efficient, versatile model for everyday work. 1.05M context, 128K output. Text+image, reasoning.',
+        'settings' => [
+            'maxTokens' => 1178000,
+            'maxInputTokens' => 1050000,
+            'maxOutputTokens' => 128000,
+            'maxPracticallyUsableInputTokens' => 525000,
+            'costsPer1000InputTokensInUSD' => 0.002,
+            'costsPer1000OuputTokensInUSD' => 0.01,
+            'costsPer1000CachedInputTokensInUSD' => 0.0001,
+            'inputTierThresholdTokens' => 272000,
+            'costsPer1000InputTokensInUSDAboveThreshold' => 0.004,
+            'costsPer1000OutputTokensInUSDAboveThreshold' => 0.015,
+            // breakpoint caching like GPT-6.1 Sol: a write costs 1.25x the input rate (30 min), 2.5x with ttl 12h
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_EXPLICIT_BREAKPOINTS,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_TWELVE_HOURS => 2.5,
+            ],
+        ],
+    ],
     AIModel::MODEL_OPENAI_GPT6_LUNA => [
         // CHEAP tier + the agent DEFAULT (AGENTIC and COMPACTION pins, owner decision 2026-09-24) — the successor
         // of GPT-5.6 Luna, released 2026-09-22. Same envelope (1.05M context, 128K output), same reasoning family and
