@@ -1120,6 +1120,13 @@ return [
             'costsPer1000InputTokensInUSD' => 0.001,
             'costsPer1000OuputTokensInUSD' => 0.005,
             'costsPer1000CachedInputTokensInUSD' => 0.0001,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-23), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
         ],
     ],
     // ===== Added 2026-09: Anthropic Claude 5 family (replaces Opus 4.8 and Sonnet 4.6, removed in 2.0.0) =====
@@ -1148,6 +1155,13 @@ return [
             'costsPer1000InputTokensInUSD' => 0.004,
             'costsPer1000OuputTokensInUSD' => 0.02,
             'costsPer1000CachedInputTokensInUSD' => 0.0002,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-23), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
         ],
     ],
     AIModel::MODEL_ANTHROPIC_CLAUDE_SONNET_5 => [
@@ -1175,6 +1189,13 @@ return [
             'costsPer1000InputTokensInUSD' => 0.002,
             'costsPer1000OuputTokensInUSD' => 0.01,
             'costsPer1000CachedInputTokensInUSD' => 0.0002,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-23), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
         ],
     ],
     AIModel::MODEL_ANTHROPIC_CLAUDE_FABLE_5_1 => [
@@ -1202,6 +1223,13 @@ return [
             'costsPer1000InputTokensInUSD' => 0.01,
             'costsPer1000OuputTokensInUSD' => 0.05,
             'costsPer1000CachedInputTokensInUSD' => 0.00025,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-23), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
         ],
     ],
     AIModel::MODEL_XAI_GROK_4_3 => [
@@ -1732,6 +1760,53 @@ return [
             'maxOutputTokens' => 32768,
             'costsPer1000InputTokensInUSD' => 0.0012,
             'costsPer1000OuputTokensInUSD' => 0.005,
+        ],
+    ],
+    AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO => [
+        // Moonshot AI's open-weight flagship, post-trained successor of Kimi K3; on OpenRouter since 2026-10-23.
+        // OpenRouter (`/api/v1/models` and `/api/v1/models/moonshotai/kimi-k3.1-pro/endpoints`, checked 2026-11-23):
+        // 1,048,576 context; text + image + video in, text out; reasoning / reasoning_effort, tools, tool_choice,
+        // response_format, structured_outputs; Chat Completions only. Prices: $2.00 / $10.00 per 1M, cached input
+        // $0.20 at Moonshot AI, Fireworks, Together (DeepInfra bf16: $1.90 / $9.50 / $0.19); no cache-write price is
+        // listed, so caching is automatic (prefix). Moonshot claims Terminal-Bench 4.0 65.7 against Opus 5.5's 66.4
+        // (vendor claim, not measured here) — no benchmark row, so no agent tier.
+        //
+        // OUTPUT: hosts allow up to 943,718 output tokens, Amazon Bedrock 128,000; the request sends maxOutputTokens
+        // as max_tokens, so it is capped at the lowest allowed host.
+        //
+        // ROUTING (provider filters, data residency): only US/EU hosts at full precision, never Moonshot AI or
+        // Alibaba; no fallback outside the list; no host that stores or trains on the data; every request parameter
+        // supported. Per the endpoints API on 2026-11-23 the candidates publish these precisions: DeepInfra bf16,
+        // Fireworks unknown, Together unknown, Amazon Bedrock unknown (no response_format / temperature), Nebius
+        // fp4 (excluded). With `quantizations` limited to fp16 / bf16 / fp8 only DeepInfra qualifies today; a host
+        // that accepts the hosts without a published precision adds `unknown` in its own config. `order` repeats the
+        // list because the LiteLLM proxy strips `only`.
+        'type' => AIModel::TYPE_LANGUAGE,
+        'vendor' => AIModel::VENDOR_MOONSHOT,
+        'agentEligible' => false,
+        'externalId' => 'kimi-k3.1-pro',
+        'openRouterExternalId' => 'moonshotai/kimi-k3.1-pro',
+        'isReasoningModel' => true,
+        'hasVisionCapabilities' => true,
+        'description' => 'Moonshot AI Kimi K3.1 Pro: open-weight multimodal reasoning model, successor of Kimi K3, for long-horizon coding and agentic work. 1M context. Text+image+video in, reasoning. Routed only to US/EU full-precision hosts. Vendor-reported Terminal-Bench 4.0: 65.7 (Opus 5.5: 66.4).',
+        'providerFilters' => [
+            'order' => ['deepinfra', 'fireworks', 'together', 'amazon-bedrock'],
+            'only' => ['deepinfra', 'fireworks', 'together', 'amazon-bedrock'],
+            'ignore' => ['moonshotai', 'alibaba'],
+            'allowFallbacks' => false,
+            'dataCollection' => 'deny',
+            'requireParameters' => true,
+            'quantizations' => ['fp16', 'bf16', 'fp8'],
+        ],
+        'settings' => [
+            'maxTokens' => 1048576,
+            'maxInputTokens' => 920576,
+            'maxOutputTokens' => 128000,
+            'maxPracticallyUsableInputTokens' => 460288,
+            'costsPer1000InputTokensInUSD' => 0.002,
+            'costsPer1000OuputTokensInUSD' => 0.01,
+            'costsPer1000CachedInputTokensInUSD' => 0.0002,
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_AUTOMATIC_PREFIX,
         ],
     ],
     AIModel::MODEL_TYPESAFE_JEV_1_13 => [

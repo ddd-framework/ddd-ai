@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.4.4
+
+- Model catalog: Moonshot AI Kimi K3.1 Pro (`AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO`, OpenRouter
+  `moonshotai/kimi-k3.1-pro`): reasoning + vision, 1M context, output capped at 128K (the lowest allowed host);
+  $2.00 / $10.00 per 1M, cached input $0.20, automatic prefix caching. No agent tier. Its catalog routing sends it only
+  to US/EU full-precision hosts (DeepInfra, Fireworks, Together, Amazon Bedrock; never Moonshot AI or Alibaba), without
+  fallback, `data_collection: deny`, `require_parameters: true`, quantizations fp16 / bf16 / fp8.
+- Provider routing per model: the catalog's `providerFilters` also take `only`, `dataCollection`, `requireParameters`
+  and `quantizations` (written as OpenRouter's `only`, `data_collection`, `require_parameters`, `quantizations`). A
+  host overrides them per model in its own `config/app/AI/models.php`. The OpenAI Responses body towards OpenRouter or
+  the LiteLLM proxy now carries the same `provider` block as the Chat Completions body (it carried none).
+- Prompt caching: the Claude models (Opus 5.5, Sonnet 5, Fable 5.1, Haiku 4.5) declare `anthropicCacheControl` with
+  write prices 1.25x (default 5 min) and 2x (`AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR`).
+
 ## 3.4.3
 
 - Model catalog: OpenAI GPT-6.2 Sol (`AIModel::MODEL_OPENAI_GPT6_2_SOL`, OpenRouter `openai/gpt-6.2-sol`), released

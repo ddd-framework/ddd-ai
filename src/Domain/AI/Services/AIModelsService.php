@@ -107,7 +107,8 @@ class AIModelsService extends Service
             );
         }
 
-        // Per-model OpenRouter provider-routing filter (order / ignore / allow_fallbacks) — pins a model to a specific
+        // Per-model OpenRouter provider-routing filter (order / ignore / allow_fallbacks / only / data_collection /
+        // require_parameters / quantizations) — pins a model to a specific
         // upstream provider when it leaks/misbehaves on another (e.g. Qwen3-235B → DeepInfra). Applied to the provider
         // block on the OpenRouter/LiteLLM egress. Absent → OpenRouter picks freely. See {@see AIModelProviderFilters}.
         $providerFiltersConfig = $modelConfig['providerFilters'] ?? null;
@@ -116,6 +117,10 @@ class AIModelsService extends Service
                 array_values(array_map('strval', (array)($providerFiltersConfig['order'] ?? []))),
                 array_values(array_map('strval', (array)($providerFiltersConfig['ignore'] ?? []))),
                 isset($providerFiltersConfig['allowFallbacks']) ? (bool)$providerFiltersConfig['allowFallbacks'] : null,
+                array_values(array_map('strval', (array)($providerFiltersConfig['only'] ?? []))),
+                isset($providerFiltersConfig['dataCollection']) ? (string)$providerFiltersConfig['dataCollection'] : null,
+                isset($providerFiltersConfig['requireParameters']) ? (bool)$providerFiltersConfig['requireParameters'] : null,
+                array_values(array_map('strval', (array)($providerFiltersConfig['quantizations'] ?? []))),
             );
         }
 

@@ -565,6 +565,16 @@ class AIModel extends Entity
 
     public const string MODEL_MOONSHOT_KIMI_K3 = 'MOONSHOT.KIMI_K3';
 
+    /**
+     * @var string Moonshot AI Kimi K3.1 Pro Model
+     * @description Open-weight multimodal reasoning model, post-trained successor of Kimi K3 (on OpenRouter since
+     *      2026-10-23): long-horizon coding and agentic work. 1M context.
+     * @usage Picked by name; routed only to US/EU hosts at full precision (catalog provider filters). No agent tier.
+     * @notes Reasoning model. $2.00/$10.00 per 1M, cached input $0.20 (Moonshot's list; OpenRouter hosts). Chat
+     *      Completions only.
+     */
+    public const string MODEL_MOONSHOT_KIMI_K3_1_PRO = 'MOONSHOT.KIMI_K3_1_PRO';
+
     public const string MODEL_ZAI_GLM_5_2 = 'ZAI.GLM_5_2';
 
     /**
@@ -646,11 +656,14 @@ class AIModel extends Entity
     /** @var string No prompt cache the caller can steer: send no cache fields */
     public const string PROMPT_CACHE_MODE_NONE = 'none';
 
-    /** @var string A prompt-cache write with the provider's default lifetime (30 min on OpenAI) */
+    /** @var string A prompt-cache write with the provider's default lifetime (30 min on OpenAI, 5 min on Anthropic) */
     public const string PROMPT_CACHE_WRITE_TTL_DEFAULT = 'default';
 
     /** @var string A prompt-cache write with the 12 h lifetime (`prompt_cache_breakpoint.ttl = 12h`) */
     public const string PROMPT_CACHE_WRITE_TTL_TWELVE_HOURS = '12h';
+
+    /** @var string A prompt-cache write with the 1 h lifetime (Anthropic `cache_control.ttl = 1h`) */
+    public const string PROMPT_CACHE_WRITE_TTL_ONE_HOUR = '1h';
 
     /** @var string Cheapest agentic tier — high-volume / simple tool-use. */
     public const string AGENT_TIER_CHEAP = 'CHEAP';

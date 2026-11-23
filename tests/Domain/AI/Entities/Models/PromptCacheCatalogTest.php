@@ -49,6 +49,19 @@ class PromptCacheCatalogTest extends TestCase
         }
     }
 
+    public function testTheClaudeModelsUseCacheControlWithTheirWritePrices(): void
+    {
+        foreach ([AIModel::MODEL_ANTHROPIC_CLAUDE_OPUS_5_5, AIModel::MODEL_ANTHROPIC_CLAUDE_SONNET_5, AIModel::MODEL_ANTHROPIC_CLAUDE_FABLE_5_1, AIModel::MODEL_ANTHROPIC_CLAUDE_HAIKU_4_5] as $modelName) {
+            $aiModel = (new AIModelsService())->getAIModelByName($modelName);
+
+            $this->assertNotNull($aiModel, $modelName);
+            $this->assertSame(AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL, $aiModel->getPromptCacheMode(), $modelName);
+            $this->assertFalse($aiModel->usesExplicitPromptCacheBreakpoints(), $modelName);
+            $this->assertSame(1.25, $aiModel->getPromptCacheWritePriceMultiplier(), $modelName);
+            $this->assertSame(2.0, $aiModel->getPromptCacheWritePriceMultiplier(AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR), $modelName);
+        }
+    }
+
     public function testAModelWithoutTheKeysHasNoModeAndNoWritePremium(): void
     {
         $aiModel = $this->hydrateLanguageModel([

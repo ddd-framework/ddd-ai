@@ -1830,8 +1830,9 @@ trait ArgusAILanguageModelTrait
      *    allow_fallbacks merged on top (a catalog `order` wins over `sort`);
      * 3. else, when nothing above decided an order, the attribute's {@see ArgusLanguageModel::$preferredProviders} as
      *    `order` + `allow_fallbacks:true`.
-     * `require_parameters` is deliberately never sent: OpenRouter then demands a provider supporting every parameter of
-     * the request (tools, tool_choice, temperature, reasoning, …), and for some models no endpoint qualifies (404).
+     * `require_parameters` is not sent by default: OpenRouter then demands a provider supporting every parameter of
+     * the request (tools, tool_choice, temperature, reasoning, …), and for some models no endpoint qualifies (404). A
+     * catalog entry whose allowed hosts support its parameters opts in through its provider filters.
      *
      * @return array<string, mixed>|null the wire `provider` block
      */
@@ -1936,6 +1937,12 @@ trait ArgusAILanguageModelTrait
         $maxToolCalls = $this->getOpenAIResponsesMaxToolCalls();
         if ($maxToolCalls !== null) {
             $body['max_tool_calls'] = $maxToolCalls;
+        }
+
+        // the same OpenRouter provider routing as the Chat Completions body, on an OpenRouter / LiteLLM egress only
+        $providerPreference = $this->resolveOpenRouterProviderPreference($argusLanguageModel, $aiModel);
+        if ($providerPreference !== null && ($this->loadEndpointTargetsLiteLLM() || $this->loadEndpointTargetsOpenRouter())) {
+            $body['provider'] = $providerPreference;
         }
 
         return $body;

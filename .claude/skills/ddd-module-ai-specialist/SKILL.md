@@ -114,6 +114,7 @@ $model->settings->maxInputTokens;  // 1050000
 - `MODEL_OPENAI_GPT6_SOL` -- PREMIUM tier, reasoning + vision, 1.05M context
 - `MODEL_OPENAI_GPT6_1_SOL` -- upgrade of GPT-6 Sol, no agent tier (picked by name, e.g. app UI translations); no fast mode
 - `MODEL_OPENAI_GPT6_2_SOL` -- upgrade of GPT-6.1 Sol (same prices), no agent tier (picked by name); no fast mode
+- `MODEL_MOONSHOT_KIMI_K3_1_PRO` -- Moonshot open-weight, no agent tier; catalog `providerFilters` route it only to US/EU full-precision hosts
 - `MODEL_OPENAI_GPT6_LUNA` -- CHEAP tier and the pinned AGENTIC / COMPACTION default
 - `MODEL_OPENAI_GPT5_6_LUNA` -- superseded 2026-09-24, kept without a tier (historical eval numbers refer to it)
 - `MODEL_GOOGLE_GEMINI_3_5_FLASH`, `MODEL_ZAI_GLM_5_2`, `MODEL_MINIMAX_M3` -- other tier/scope picks
