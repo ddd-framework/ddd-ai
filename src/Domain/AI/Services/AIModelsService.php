@@ -11,6 +11,7 @@ use DDD\Domain\AI\Entities\Models\Benchmarks\AIModelBenchmarks;
 use DDD\Domain\AI\Entities\Models\Settings\AIImageModelSetting;
 use DDD\Domain\AI\Entities\Models\Settings\AILanguageModelSetting;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelAgenticUseCaseConfig;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelPreviousReasoningCarryOver;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelProviderFilters;
 use DDD\Domain\AI\Entities\Models\Settings\PromptCacheWritePrice;
 use DDD\Domain\AI\Entities\Models\Settings\PromptCacheWritePrices;
@@ -104,6 +105,10 @@ class AIModelsService extends Service
             $aiModel->agenticUseCase = new AIModelAgenticUseCaseConfig(
                 isset($agenticConfig['reasoningEffort']) ? (string)$agenticConfig['reasoningEffort'] : null,
                 isset($agenticConfig['temperature']) ? (float)$agenticConfig['temperature'] : null,
+                // whether and how far an agent sends the model's own reasoning of earlier calls back (null = its defaults)
+                is_array($agenticConfig['previousReasoning'] ?? null)
+                    ? AIModelPreviousReasoningCarryOver::fromCatalogArray($agenticConfig['previousReasoning'])
+                    : null,
             );
         }
 
@@ -123,12 +128,6 @@ class AIModelsService extends Service
                 array_values(array_map('strval', (array)($providerFiltersConfig['quantizations'] ?? []))),
             );
         }
-
-        // Whether an agent sends the model's own reasoning of earlier calls back (null = the caller's default)
-        $aiModel->previousReasoningCarryOver = isset($modelConfig['previousReasoningCarryOver'])
-            && in_array((string)$modelConfig['previousReasoningCarryOver'], AIModel::PREVIOUS_REASONING_CARRY_OVERS, true)
-            ? (string)$modelConfig['previousReasoningCarryOver']
-            : null;
 
         // Whether a request with tools carries parallel_tool_calls (null = not decided, sent as before)
         $aiModel->supportsParallelToolCalls = isset($modelConfig['supportsParallelToolCalls']) ? (bool)$modelConfig['supportsParallelToolCalls'] : null;

@@ -7,7 +7,8 @@ namespace DDD\Domain\AI\Entities\Models\Settings;
 use DDD\Domain\Base\Entities\ValueObject;
 
 /**
- * Per-model configuration for the AGENTIC use case (tool-calling agent loop), scoped to that use case only — NOT
+ * Per-model configuration for the AGENTIC use case (tool-calling agent loop: reasoning effort, temperature, the
+ * carry-over of the model's own earlier reasoning), scoped to that use case only — NOT
  * intrinsic model facts (those stay on {@see AILanguageModelSetting}) and NOT a static call-site default. It rides
  * along with whatever model the AIModelsService selects, and is applied to the request ONLY when the egress conversation
  * opts in (the agentic egress), via {@see \DDD\Domain\AI\Repo\Argus\Traits\ArgusAILanguageModelTrait}. A non-agentic
@@ -37,10 +38,17 @@ class AIModelAgenticUseCaseConfig extends ValueObject
      */
     public ?float $temperature = null;
 
-    public function __construct(?string $reasoningEffort = null, ?float $temperature = null)
+    /**
+     * @var AIModelPreviousReasoningCarryOver|null Whether and how far the agent sends the model's own reasoning of
+     *      earlier calls back (catalog key `agenticUseCase.previousReasoning`); null = the agent's defaults.
+     */
+    public ?AIModelPreviousReasoningCarryOver $previousReasoning = null;
+
+    public function __construct(?string $reasoningEffort = null, ?float $temperature = null, ?AIModelPreviousReasoningCarryOver $previousReasoning = null)
     {
         $this->reasoningEffort = $reasoningEffort;
         $this->temperature = $temperature;
+        $this->previousReasoning = $previousReasoning;
         parent::__construct();
     }
 }

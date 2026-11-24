@@ -2,6 +2,7 @@
 
 use DDD\Domain\AI\Entities\Models\AIModel;
 use DDD\Domain\AI\Entities\Models\Benchmarks\AIModelBenchmarks;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelPreviousReasoningCarryOver;
 use DDD\Domain\AI\Entities\Models\Speed\AIModelSpeedMeasurements;
 
 // PRICING OVER A GATEWAY (applies to every entry reached via OpenRouter, especially the OPENAI family):
@@ -1188,7 +1189,14 @@ return [
         'supportsParallelToolCalls' => true,
         'supportsForcedToolChoice' => false,
         'externalId' => 'claude-opus-5-5',
-        'agenticUseCase' => ['reasoningEffort' => 'high'],
+        'agenticUseCase' => [
+            'reasoningEffort' => 'high',
+            // On the Messages API: with its earlier thinking replayed, Opus thinks less per call (107–115 tokens instead
+            // of 183 without replay; 8 runs per arm). Replayed thinking is read from the prompt cache at a fraction of
+            // the input price, while removing earlier thinking changes the history from the first removed step on and
+            // rewrites the cache from there. So no cut: the thinking leaves only with a compaction.
+            'previousReasoning' => ['carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL],
+        ],
         'openRouterExternalId' => 'anthropic/claude-opus-5.5',
         'isReasoningModel' => true,
         'hasVisionCapabilities' => true,
@@ -1700,6 +1708,15 @@ return [
         'supportsParallelToolCalls' => true,
         'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-6.2-sol',
+        'agenticUseCase' => [
+            // The same reasoning family as GPT-6 Luna on the same wire, so the same carry-over; measured on Luna only:
+            // the more of its own earlier reasoning Luna sees, the more it reasons per call and the slower it answers,
+            // and a cap of 1,000 instead of 4,000 reasoning tokens kept the first call of a turn short at equal quality.
+            'previousReasoning' => [
+                'carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED,
+                'capTokens' => 1000,
+            ],
+        ],
         'openRouterExternalId' => 'openai/gpt-6.2-sol',
         'isReasoningModel' => true,
         'hasVisionCapabilities' => true,
@@ -1756,7 +1773,19 @@ return [
         'externalId' => 'gpt-6-luna',
         // Agentic: `low`, carried over from 5.6 Luna (same reasoning family, same load_skills→reasoning-only
         // empty-turn stall class). Re-tune only if an eval shows it under-reasons.
-        'agenticUseCase' => ['reasoningEffort' => 'low'],
+        'agenticUseCase' => [
+            'reasoningEffort' => 'low',
+            // Measured in several test series: the more of its own earlier reasoning Luna sees, the more it reasons per
+            // call, and responses get slow (overthinking). Median reasoning per call by the earlier reasoning in view:
+            // 0 at none, 389 at 501–2,000, 743 at 5,001–10,000, 874 above 10,000 tokens; latency follows reasoning
+            // (~22 s per 1,000 output tokens). Without any carry-over it repeats its own reads and writes (pass rate
+            // 10/19). A cap of 1,000 instead of 4,000 cut the first call of a turn from a median 276 to 75 reasoning
+            // tokens and kept its p90 latency under 7 s at equal quality.
+            'previousReasoning' => [
+                'carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED,
+                'capTokens' => 1000,
+            ],
+        ],
         'openRouterExternalId' => 'openai/gpt-6-luna',
         'isReasoningModel' => true,
         'hasVisionCapabilities' => true,
@@ -2000,7 +2029,9 @@ return [
         // without its earlier calls' reasoning_details it re-reads the same pictures. The current turn's items only —
         // they stay a stable prefix (automatic prefix cache, $0.20/M) and end with the turn; `capped` would cut the
         // early steps of a long picture-checking turn first
-        'previousReasoningCarryOver' => AIModel::PREVIOUS_REASONING_CARRY_OVER_CURRENT_TURN,
+        'agenticUseCase' => [
+            'previousReasoning' => ['carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CURRENT_TURN],
+        ],
         'agentEligible' => false,
         'externalId' => 'kimi-k3.1-pro',
         'openRouterExternalId' => 'moonshotai/kimi-k3.1-pro',

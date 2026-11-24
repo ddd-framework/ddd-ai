@@ -8,6 +8,7 @@ use DDD\Domain\AI\Entities\Models\Benchmarks\AIModelBenchmarks;
 use DDD\Domain\AI\Entities\Models\Settings\AIImageModelSetting;
 use DDD\Domain\AI\Entities\Models\Settings\AILanguageModelSetting;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelAgenticUseCaseConfig;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelPreviousReasoningCarryOver;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelProviderFilters;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelSetting;
 use DDD\Domain\AI\Entities\Models\Speed\AIModelSpeedMeasurements;
@@ -736,8 +737,8 @@ class AIModel extends Entity
     public ?int $effectiveContextTokens = null;
 
     /**
-     * @var AIModelAgenticUseCaseConfig|null Per-model settings for the AGENTIC use case (reasoning effort, temperature),
-     *      applied only when the agentic egress opts in. Rides with the AIModelsService's dynamic selection; null = no
+     * @var AIModelAgenticUseCaseConfig|null Per-model settings for the AGENTIC use case (reasoning effort, temperature,
+     *      the carry-over of the model's own earlier reasoning), applied only when the agentic egress opts in. Rides with the AIModelsService's dynamic selection; null = no
      *      agentic-specific overrides (provider defaults). See {@see AIModelAgenticUseCaseConfig}.
      */
     public ?AIModelAgenticUseCaseConfig $agenticUseCase = null;
@@ -769,37 +770,6 @@ class AIModel extends Entity
      *      {@see self::acceptsForcedToolChoice()}.
      */
     public ?bool $supportsForcedToolChoice = null;
-
-    /** The model's own reasoning items of a previous call are never sent back */
-    public const string PREVIOUS_REASONING_CARRY_OVER_OFF = 'off';
-
-    /** Only the reasoning items of the current owner turn's earlier calls are sent back */
-    public const string PREVIOUS_REASONING_CARRY_OVER_CURRENT_TURN = 'currentTurn';
-
-    /** The reasoning items of earlier calls are sent back up to a token cap */
-    public const string PREVIOUS_REASONING_CARRY_OVER_CAPPED = 'capped';
-
-    /** Every reasoning item of earlier calls is sent back */
-    public const string PREVIOUS_REASONING_CARRY_OVER_ALL = 'all';
-
-    /** @var string[] The values {@see $previousReasoningCarryOver} accepts */
-    public const array PREVIOUS_REASONING_CARRY_OVERS = [
-        self::PREVIOUS_REASONING_CARRY_OVER_OFF,
-        self::PREVIOUS_REASONING_CARRY_OVER_CURRENT_TURN,
-        self::PREVIOUS_REASONING_CARRY_OVER_CAPPED,
-        self::PREVIOUS_REASONING_CARRY_OVER_ALL,
-    ];
-
-    /**
-     * @var string|null Whether an agent sends this model's own reasoning items (Chat Completions `reasoning_details`,
-     *      Responses `reasoning` items) of earlier calls back on the later calls of a conversation: one of
-     *      {@see PREVIOUS_REASONING_CARRY_OVERS}. A reasoning model that keeps its verdicts only in its reasoning (and
-     *      not in its visible text) loses them on the next call without it — e.g. what it saw on pictures that a later
-     *      call no longer carries. Explicit per catalog model; a host overrides it in its own
-     *      `config/app/AI/models.php`. Null = the caller's default for the wire API; read through
-     *      {@see self::getPreviousReasoningCarryOver()}.
-     */
-    public ?string $previousReasoningCarryOver = null;
 
     /** @var int The transport timeout of a call when the catalog sets none (the language-model repos' DEFAULT_ARGUS_TIMEOUT) */
     public const int DEFAULT_TRANSPORT_TIMEOUT_SECONDS = 300;
@@ -1044,10 +1014,10 @@ class AIModel extends Entity
         return $this->supportsParallelToolCalls !== false;
     }
 
-    /** The catalog's carry-over of the model's own previous reasoning (one of PREVIOUS_REASONING_CARRY_OVERS), null when it sets none */
-    public function getPreviousReasoningCarryOver(): ?string
+    /** The catalog's policy for sending the model's own reasoning of earlier calls back (`agenticUseCase.previousReasoning`), null when it sets none */
+    public function getAgenticPreviousReasoningCarryOver(): ?AIModelPreviousReasoningCarryOver
     {
-        return in_array($this->previousReasoningCarryOver, self::PREVIOUS_REASONING_CARRY_OVERS, true) ? $this->previousReasoningCarryOver : null;
+        return $this->agenticUseCase?->previousReasoning;
     }
 
     /** The total timeout of one HTTP attempt to this model in seconds (the catalog's value, else the default) */

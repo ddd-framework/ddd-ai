@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace DDD\Tests\Domain\AI\Entities\Models;
 
 use DDD\Domain\AI\Entities\Models\AIModel;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelPreviousReasoningCarryOver;
 use DDD\Domain\AI\Services\AIModelsService;
 use PHPUnit\Framework\TestCase;
 
-/** The catalog's carry-over of a model's own previous reasoning: explicit for Kimi K3.1 Pro, unset elsewhere. */
+/** The catalog's carry-over of a model's own previous reasoning (`agenticUseCase.previousReasoning`). */
 class PreviousReasoningCarryOverCatalogTest extends TestCase
 {
     public function testKimiK31ProCarriesTheCurrentTurnsReasoning(): void
@@ -16,22 +17,62 @@ class PreviousReasoningCarryOverCatalogTest extends TestCase
         $kimi = (new AIModelsService())->getAIModelByName(AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO);
 
         $this->assertNotNull($kimi);
-        $this->assertSame(AIModel::PREVIOUS_REASONING_CARRY_OVER_CURRENT_TURN, $kimi->getPreviousReasoningCarryOver());
+        $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_CURRENT_TURN, $kimi->getAgenticPreviousReasoningCarryOver()?->getCarryOver());
+        $this->assertNull($kimi->agenticUseCase?->reasoningEffort);
     }
 
-    public function testAModelWithoutTheSettingLeavesItToTheCaller(): void
+    public function testLunaAndSolCapTheirReasoningAtOneThousandTokens(): void
     {
-        $gpt62Sol = (new AIModelsService())->getAIModelByName(AIModel::MODEL_OPENAI_GPT6_2_SOL);
+        foreach ([AIModel::MODEL_OPENAI_GPT6_LUNA, AIModel::MODEL_OPENAI_GPT6_2_SOL] as $modelName) {
+            $aiModel = (new AIModelsService())->getAIModelByName($modelName);
+            $previousReasoning = $aiModel?->getAgenticPreviousReasoningCarryOver();
 
-        $this->assertNotNull($gpt62Sol);
-        $this->assertNull($gpt62Sol->getPreviousReasoningCarryOver());
+            $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED, $previousReasoning?->getCarryOver(), $modelName);
+            $this->assertSame(1000, $previousReasoning->capTokens, $modelName);
+            $this->assertNull($previousReasoning->keptTokensAtCut, $modelName);
+            $this->assertNull($previousReasoning->keptStepsAtCut, $modelName);
+            $this->assertNull($previousReasoning->headroomTokensAfterCut, $modelName);
+        }
+        $this->assertSame('low', (new AIModelsService())->getAIModelByName(AIModel::MODEL_OPENAI_GPT6_LUNA)?->agenticUseCase?->reasoningEffort);
     }
 
-    public function testAnUnknownValueReadsAsUnset(): void
+    public function testOpusCarriesEveryEarlierThinkingBlock(): void
     {
-        $aiModel = new AIModel();
-        $aiModel->previousReasoningCarryOver = 'sometimes';
+        $opus = (new AIModelsService())->getAIModelByName(AIModel::MODEL_ANTHROPIC_CLAUDE_OPUS_5_5);
 
-        $this->assertNull($aiModel->getPreviousReasoningCarryOver());
+        $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL, $opus?->getAgenticPreviousReasoningCarryOver()?->getCarryOver());
+        $this->assertSame('high', $opus->agenticUseCase->reasoningEffort);
+    }
+
+    public function testAModelWithoutTheBlockLeavesItToTheCaller(): void
+    {
+        $gpt61Sol = (new AIModelsService())->getAIModelByName(AIModel::MODEL_OPENAI_GPT6_1_SOL);
+
+        $this->assertNotNull($gpt61Sol);
+        $this->assertNull($gpt61Sol->getAgenticPreviousReasoningCarryOver());
+    }
+
+    public function testInvalidValuesReadAsUnset(): void
+    {
+        $this->assertNull(AIModelPreviousReasoningCarryOver::fromCatalogArray(['carryOver' => 'sometimes', 'capTokens' => 0, 'keptStepsAtCut' => 0]));
+
+        $previousReasoning = AIModelPreviousReasoningCarryOver::fromCatalogArray([
+            'carryOver' => 'sometimes',
+            'capTokens' => 8000,
+            'keptTokensAtCut' => 2000,
+            'keptStepsAtCut' => 2,
+            'headroomTokensAfterCut' => -1,
+        ]);
+        $this->assertNotNull($previousReasoning);
+        $this->assertNull($previousReasoning->getCarryOver());
+        $this->assertSame(8000, $previousReasoning->capTokens);
+        $this->assertSame(2000, $previousReasoning->keptTokensAtCut);
+        $this->assertSame(2, $previousReasoning->keptStepsAtCut);
+        $this->assertNull($previousReasoning->headroomTokensAfterCut);
+    }
+
+    public function testTheRemovedFlatCatalogKeyIsNotRead(): void
+    {
+        $this->assertFalse(property_exists(AIModel::class, 'previousReasoningCarryOver'));
     }
 }

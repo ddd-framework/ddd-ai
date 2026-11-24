@@ -1,5 +1,25 @@
 # Changelog
 
+## 3.6.0
+
+- **Changed:** the carry-over of a model's own earlier reasoning moved into the agentic block of the catalog:
+  `agenticUseCase.previousReasoning`, the value object `AIModelPreviousReasoningCarryOver` on
+  `AIModelAgenticUseCaseConfig::$previousReasoning` (`AIModel::getAgenticPreviousReasoningCarryOver()`). Fields, all
+  optional (null = the agent's next source decides): `carryOver` (`off`, `currentTurn`, `capped`, `all`; constants
+  `AIModelPreviousReasoningCarryOver::CARRY_OVER_*`), and for `capped` `capTokens` (max), `keptTokensAtCut` (min: at a
+  cut, whole steps are kept from the newest back until at least this many reasoning tokens), `keptStepsAtCut` and
+  `headroomTokensAfterCut` (after a cut, the next one waits until the carried sum exceeds max(cap, kept + headroom)).
+  An invalid value reads as unset. The top-level key `previousReasoningCarryOver`, `AIModel::$previousReasoningCarryOver`,
+  `AIModel::getPreviousReasoningCarryOver()` and `AIModel::PREVIOUS_REASONING_CARRY_OVER*` are removed, without an alias.
+- Catalog: Kimi K3.1 Pro keeps `currentTurn` (moved); GPT-6 Luna and GPT-6.2 Sol `capped` at 1,000 reasoning tokens
+  (measured on Luna: the more of its own earlier reasoning it sees, the more it reasons per call and the slower it
+  answers; a cap of 1,000 instead of 4,000 kept the first call of a turn short at equal quality); Claude Opus 5.5 `all`
+  (with its earlier thinking replayed it thinks less per call; the replay is read from the prompt cache, a cut rewrites
+  the cache from the first removed step).
+- **Host steps:** update `mgamadeus/ddd-agents` to 0.3.3 or newer together with this release (older versions call the
+  removed getter; the package declares the conflict). A host catalog that sets `previousReasoningCarryOver` on a model
+  moves it to `'agenticUseCase' => ['previousReasoning' => ['carryOver' => …]]` — the old key is no longer read.
+
 ## 3.5.0
 
 - Agent wire API `messages` (`AIModel::AGENT_WIRE_API_MESSAGES`, in `CATALOG_AGENT_WIRE_APIS`): the Anthropic Messages
