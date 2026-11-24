@@ -1201,6 +1201,10 @@ return [
             'costsPer1000InputTokensInUSD' => 0.004,
             'costsPer1000OuputTokensInUSD' => 0.02,
             'costsPer1000CachedInputTokensInUSD' => 0.0002,
+            // The agent speaks the Anthropic Messages API to this model (the direct OpenRouter egress; any other egress
+            // falls back to Chat Completions). Probed 2026-11-24: thinking blocks come back signed and are replayed,
+            // mid-conversation system messages and tool additions are accepted, a dropped block is reported.
+            'agentWireApi' => AIModel::AGENT_WIRE_API_MESSAGES,
             // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
             // (OpenRouter input_cache_write, checked 2026-11-23), 2x with ttl 1h (Anthropic's published rate)
             'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
@@ -1273,8 +1277,133 @@ return [
             'costsPer1000InputTokensInUSD' => 0.01,
             'costsPer1000OuputTokensInUSD' => 0.05,
             'costsPer1000CachedInputTokensInUSD' => 0.00025,
+            // The agent speaks the Anthropic Messages API to this model (the direct OpenRouter egress; any other egress
+            // falls back to Chat Completions). Probed 2026-11-24: thinking blocks come back signed and are replayed,
+            // mid-conversation system messages and tool additions are accepted, a dropped block is reported.
+            'agentWireApi' => AIModel::AGENT_WIRE_API_MESSAGES,
             // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
             // (OpenRouter input_cache_write, checked 2026-11-23), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
+        ],
+    ],
+    AIModel::MODEL_ANTHROPIC_CLAUDE_SONNET_5_5 => [
+        // Added 2026-11. Prices are Anthropic's list rate as OpenRouter lists it (read 2026-11-24). No `speed` or
+        // `benchmarks` rows: neither has been measured for this model, so the agenticScore stays null and the
+        // `agentTier` below changes no tier pick until a measurement lands.
+        // A forced tool choice is answered with a 400 (probed 2026-11-24).
+        'agentTier' => AIModel::AGENT_TIER_PREMIUM,
+        'speed' => [],
+        'benchmarks' => [],
+        'type' => AIModel::TYPE_LANGUAGE,
+        'vendor' => AIModel::VENDOR_ANTHROPIC,
+        'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => false,
+        'externalId' => 'claude-sonnet-5-5',
+        'agenticUseCase' => ['reasoningEffort' => 'high'],
+        'openRouterExternalId' => 'anthropic/claude-sonnet-5.5',
+        'isReasoningModel' => true,
+        'hasVisionCapabilities' => true,
+        'description' => 'Anthropic Claude Sonnet 5.5: the Sonnet tier of the 5.5 line, balancing speed and intelligence. 1M context, 128k output. Text+image, reasoning. Successor of Sonnet 5 at the same token prices, cache reads at half.',
+        'settings' => [
+            'maxTokens' => 1000000,
+            'maxInputTokens' => 1000000,
+            'maxOutputTokens' => 128000,
+            'maxPracticallyUsableInputTokens' => 500000,
+            'costsPer1000InputTokensInUSD' => 0.002,
+            'costsPer1000OuputTokensInUSD' => 0.01,
+            'costsPer1000CachedInputTokensInUSD' => 0.0001,
+            // The agent speaks the Anthropic Messages API to this model (the direct OpenRouter egress; any other egress
+            // falls back to Chat Completions). Probed 2026-11-24: thinking blocks come back signed and are replayed,
+            // mid-conversation system messages and tool additions are accepted, a dropped block is reported.
+            'agentWireApi' => AIModel::AGENT_WIRE_API_MESSAGES,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-24), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
+        ],
+    ],
+    AIModel::MODEL_ANTHROPIC_CLAUDE_HAIKU_5_5 => [
+        // Added 2026-11. Prices are Anthropic's list rate as OpenRouter lists it (read 2026-11-24). No `speed` or
+        // `benchmarks` rows: neither has been measured for this model, so the agenticScore stays null and the
+        // `agentTier` below changes no tier pick until a measurement lands.
+        // Accepts a forced tool choice (probed 2026-11-24).
+        'agentTier' => AIModel::AGENT_TIER_STANDARD,
+        'speed' => [],
+        'benchmarks' => [],
+        'type' => AIModel::TYPE_LANGUAGE,
+        'vendor' => AIModel::VENDOR_ANTHROPIC,
+        'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
+        'externalId' => 'claude-haiku-5-5',
+        'agenticUseCase' => ['reasoningEffort' => 'medium'],
+        'openRouterExternalId' => 'anthropic/claude-haiku-5.5',
+        'isReasoningModel' => true,
+        'hasVisionCapabilities' => true,
+        'description' => 'Anthropic Claude Haiku 5.5: the fast, low-cost tier of the 5.5 line for high-volume work and sub-agent tasks. 1M context, 128k output. Text+image, reasoning. Successor of Haiku 4.5.',
+        'settings' => [
+            'maxTokens' => 1000000,
+            'maxInputTokens' => 1000000,
+            'maxOutputTokens' => 128000,
+            'maxPracticallyUsableInputTokens' => 500000,
+            'costsPer1000InputTokensInUSD' => 0.0001,
+            'costsPer1000OuputTokensInUSD' => 0.0005,
+            'costsPer1000CachedInputTokensInUSD' => 0.00001,
+            // Above 100K prompt tokens the whole request is billed at 5x (Anthropic's published rate)
+            'inputTierThresholdTokens' => 100000,
+            'costsPer1000InputTokensInUSDAboveThreshold' => 0.0005,
+            'costsPer1000OutputTokensInUSDAboveThreshold' => 0.0025,
+            // The agent speaks the Anthropic Messages API to this model (the direct OpenRouter egress; any other egress
+            // falls back to Chat Completions). Probed 2026-11-24: thinking blocks come back signed and are replayed,
+            // mid-conversation system messages and tool additions are accepted, a dropped block is reported.
+            'agentWireApi' => AIModel::AGENT_WIRE_API_MESSAGES,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-24), 2x with ttl 1h (Anthropic's published rate)
+            'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
+            'promptCacheWritePriceMultipliers' => [
+                AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,
+                AIModel::PROMPT_CACHE_WRITE_TTL_ONE_HOUR => 2.0,
+            ],
+        ],
+    ],
+    AIModel::MODEL_ANTHROPIC_CLAUDE_FABLE_5_2 => [
+        // Added 2026-11. Prices are Anthropic's list rate as OpenRouter lists it (read 2026-11-24). No `speed` or
+        // `benchmarks` rows: neither has been measured for this model, so the agenticScore stays null and the
+        // `agentTier` below changes no tier pick until a measurement lands.
+        // A forced tool choice is answered with a 400 (probed 2026-11-24).
+        'agentTier' => AIModel::AGENT_TIER_PREMIUM,
+        'speed' => [],
+        'benchmarks' => [],
+        'type' => AIModel::TYPE_LANGUAGE,
+        'vendor' => AIModel::VENDOR_ANTHROPIC,
+        'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => false,
+        'externalId' => 'claude-fable-5-2',
+        'agenticUseCase' => ['reasoningEffort' => 'high'],
+        'openRouterExternalId' => 'anthropic/claude-fable-5.2',
+        'isReasoningModel' => true,
+        'hasVisionCapabilities' => true,
+        'description' => 'Anthropic Claude Fable 5.2: the most capable Claude model open to all customers, for the most demanding reasoning and long-horizon agentic work. 1M context, 128k output. Text+image, reasoning. Successor of Fable 5.1 at a lower price.',
+        'settings' => [
+            'maxTokens' => 1000000,
+            'maxInputTokens' => 1000000,
+            'maxOutputTokens' => 128000,
+            'maxPracticallyUsableInputTokens' => 500000,
+            'costsPer1000InputTokensInUSD' => 0.008,
+            'costsPer1000OuputTokensInUSD' => 0.04,
+            'costsPer1000CachedInputTokensInUSD' => 0.0002,
+            // The agent speaks the Anthropic Messages API to this model (the direct OpenRouter egress; any other egress
+            // falls back to Chat Completions). Probed 2026-11-24: thinking blocks come back signed and are replayed,
+            // mid-conversation system messages and tool additions are accepted, a dropped block is reported.
+            'agentWireApi' => AIModel::AGENT_WIRE_API_MESSAGES,
+            // Anthropic cache_control markers: a write costs 1.25x the input rate with the default 5 min lifetime
+            // (OpenRouter input_cache_write, checked 2026-11-24), 2x with ttl 1h (Anthropic's published rate)
             'promptCacheMode' => AIModel::PROMPT_CACHE_MODE_ANTHROPIC_CACHE_CONTROL,
             'promptCacheWritePriceMultipliers' => [
                 AIModel::PROMPT_CACHE_WRITE_TTL_DEFAULT => 1.25,

@@ -445,6 +445,32 @@ class AIModel extends Entity
      */
     public const string MODEL_ANTHROPIC_CLAUDE_FABLE_5_1 = 'ANTHROPIC.CLAUDE_FABLE_5_1';
 
+    // ===== Anthropic (Claude 5.5 line and Fable 5.2) — added 2026-11 =====
+
+    /**
+     * @var string Anthropic Claude Sonnet 5.5
+     * @description Sonnet tier of the 5.5 line: successor of Sonnet 5 at the same token prices. Reasoning + vision,
+     *      1M context, 128K output.
+     * @notes $2.00/$10.00 per 1M, cached input read $0.10. Rejects a forced tool choice.
+     */
+    public const string MODEL_ANTHROPIC_CLAUDE_SONNET_5_5 = 'ANTHROPIC.CLAUDE_SONNET_5_5';
+
+    /**
+     * @var string Anthropic Claude Haiku 5.5
+     * @description Haiku tier of the 5.5 line: the fast, low-cost model for high-volume work and sub-agent tasks.
+     *      Reasoning + vision, 1M context, 128K output.
+     * @notes $0.10/$0.50 per 1M up to 100K prompt tokens ($0.50/$2.50 above), cached input read $0.01.
+     */
+    public const string MODEL_ANTHROPIC_CLAUDE_HAIKU_5_5 = 'ANTHROPIC.CLAUDE_HAIKU_5_5';
+
+    /**
+     * @var string Anthropic Claude Fable 5.2
+     * @description Successor of Fable 5.1 at a lower price: the most capable Claude model open to all customers.
+     *      Reasoning + vision, 1M context, 128K output.
+     * @notes $8.00/$40.00 per 1M, cached input read $0.20. Rejects a forced tool choice.
+     */
+    public const string MODEL_ANTHROPIC_CLAUDE_FABLE_5_2 = 'ANTHROPIC.CLAUDE_FABLE_5_2';
+
     /**
      * @var array A model name that LEFT the catalog, mapped to the successor its stored occurrences resolve to.
      *
@@ -1276,8 +1302,18 @@ class AIModel extends Entity
     /** The OpenAI Responses API (`/responses`). */
     public const string AGENT_WIRE_API_RESPONSES = 'responses';
 
-    /** @var string[] The wire APIs a model's catalog entry may name. */
-    public const array CATALOG_AGENT_WIRE_APIS = [self::AGENT_WIRE_API_CHAT_COMPLETIONS, self::AGENT_WIRE_API_RESPONSES];
+    /**
+     * The Anthropic Messages API (`/messages`): the native wire of the Claude models. It returns the model's thinking
+     * blocks signed and names every block it dropped on the way in (`input_transformations`); the Chat-Completions and
+     * Responses conversions of the same models drop silently.
+     */
+    public const string AGENT_WIRE_API_MESSAGES = 'messages';
+
+    /**
+     * @var string[] The wire APIs this package's catalog names. A list for hosts and agents to read: this package
+     *      does not check a catalog value against it ({@see getAgentWireApi()}).
+     */
+    public const array CATALOG_AGENT_WIRE_APIS = [self::AGENT_WIRE_API_CHAT_COMPLETIONS, self::AGENT_WIRE_API_RESPONSES, self::AGENT_WIRE_API_MESSAGES];
 
     /** Every reasoning item the request carries is rendered, earlier turns' included. */
     public const string REASONING_CONTEXT_ALL_TURNS = 'all_turns';
@@ -1293,23 +1329,19 @@ class AIModel extends Entity
 
     /**
      * The wire API an agent speaks to this model by default: the catalog's `settings.agentWireApi`
-     * ({@see AILanguageModelSetting::$agentWireApi}). Absent = {@see self::AGENT_WIRE_API_CHAT_COMPLETIONS}; an unknown
-     * value too (logged as a warning).
-     *
-     * @return string One of {@see self::CATALOG_AGENT_WIRE_APIS}
+     * ({@see AILanguageModelSetting::$agentWireApi}) AS WRITTEN; absent or empty =
+     * {@see self::AGENT_WIRE_API_CHAT_COMPLETIONS}. This package stores the value and does not check it: the agent
+     * that reads it decides which wire APIs it speaks and what it does with a value it does not know (mgamadeus/ddd-agents
+     * speaks Chat Completions then and logs the value). So a host can name a wire API a newer agent brings without a
+     * release of this package.
      */
     public function getAgentWireApi(): string
     {
         $agentWireApi = $this->settings instanceof AILanguageModelSetting ? $this->settings->agentWireApi : null;
-        if ($agentWireApi === null) {
+        if ($agentWireApi === null || trim($agentWireApi) === '') {
             return static::AGENT_WIRE_API_CHAT_COMPLETIONS;
         }
-        $canonicalAgentWireApi = static::canonicalAgentWireApi($agentWireApi);
-        if ($canonicalAgentWireApi === null) {
-            $this->logUnknownAgentSetting('agentWireApi', $agentWireApi, 'the agent speaks Chat Completions');
-            return static::AGENT_WIRE_API_CHAT_COMPLETIONS;
-        }
-        return $canonicalAgentWireApi;
+        return $agentWireApi;
     }
 
     /**
@@ -1333,7 +1365,9 @@ class AIModel extends Entity
     }
 
     /**
-     * @param string|null $value `chatCompletions` / `responses` in any case, with surrounding blanks
+     * A helper for a reader of the catalog value; {@see getAgentWireApi()} does not use it.
+     *
+     * @param string|null $value `chatCompletions` / `responses` / `messages` in any case, with surrounding blanks
      * @return string|null The constant of {@see self::CATALOG_AGENT_WIRE_APIS}; null for anything else
      */
     public static function canonicalAgentWireApi(?string $value): ?string

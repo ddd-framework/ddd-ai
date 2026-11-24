@@ -1,5 +1,36 @@
 # Changelog
 
+## 3.5.0
+
+- Agent wire API `messages` (`AIModel::AGENT_WIRE_API_MESSAGES`, in `CATALOG_AGENT_WIRE_APIS`): the Anthropic Messages
+  API as a third value of the catalog's `settings.agentWireApi`. The key names the wire a model works best on:
+  `messages` for the Claude models probed on it (Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1, Fable 5.2), `responses`
+  where a host sets it for an OpenAI model, absent = Chat Completions. Claude Sonnet 5 (refuses mid-conversation tool
+  additions) and Claude Haiku 4.5 (no adaptive thinking) stay on Chat Completions. Host-overridable per model.
+- **Changed:** `AIModel::getAgentWireApi()` returns the catalog's `settings.agentWireApi` as written (absent or empty
+  = Chat Completions). It no longer maps the value onto `CATALOG_AGENT_WIRE_APIS` and no longer logs and replaces an
+  unknown one: this package stores the facts an agent reads and checks none of them. The agent that reads the value
+  decides what it speaks (mgamadeus/ddd-agents 0.2.0 speaks Chat Completions for a value it does not know and logs
+  it), so a later wire API needs no release of this package. A caller that compared the result with a constant and
+  wrote the catalog value in another case or with blanks uses `AIModel::canonicalAgentWireApi()`.
+- Hooks for an answer shape of another wire API on the language-model trait: `isAnswerObjectWithoutEnvelope()`
+  (asked by `unwrapAIModelResponse()`; default: an object with `choices`), `extractAnswerText()` and
+  `extractAnswerUsage()` (defaults: the Responses readers). A repo that speaks a wire API the trait does not compose
+  (the agent egress on the Messages API) overrides them together with `extractToolCallsFromResponse()`; the trait
+  itself reads no Messages answer.
+- **Changed:** the Responses readers (`extractOpenAIResponsesText()`, `extractOpenAIResponsesUsage()`) read only a
+  Responses answer (`isOpenAIResponsesAnswer()`: `object: "response"`, an `output` list without `choices`, or
+  `output_text`). Before, any answer with `usage.input_tokens` was booked as Responses usage; an answer of another
+  wire API names its usage with the same keys and counts it differently (Messages: the uncached remainder only).
+- Model catalog: Claude Sonnet 5.5 (`MODEL_ANTHROPIC_CLAUDE_SONNET_5_5`, $2 / $10 per 1M, cache read $0.10), Claude
+  Haiku 5.5 (`MODEL_ANTHROPIC_CLAUDE_HAIKU_5_5`, $0.10 / $0.50 per 1M up to 100K prompt tokens, $0.50 / $2.50 above,
+  cache read $0.01) and Claude Fable 5.2 (`MODEL_ANTHROPIC_CLAUDE_FABLE_5_2`, $8 / $40 per 1M, cache read $0.20), each
+  with 1M context, 128K output, Anthropic cache markers and no invented speed or benchmark row.
+  `supportsForcedToolChoice` is false for Sonnet 5.5 and Fable 5.2 and true for Haiku 5.5 (probed).
+- **Host step:** update `mgamadeus/ddd-agents` to 0.2.0 or newer together with this release. Older agent versions
+  refuse a conversation on a model whose catalog entry names `messages`; Composer blocks that pair
+  (`conflict: mgamadeus/ddd-agents <0.2.0`). A host that stays on ddd-agents 0.1.x stays on ddd-ai 3.4.x.
+
 ## 3.4.8
 
 - Model catalog `supportsForcedToolChoice` (?bool, explicit on every tool model, host-overridable):

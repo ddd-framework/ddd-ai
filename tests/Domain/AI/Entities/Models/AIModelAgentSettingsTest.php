@@ -23,18 +23,30 @@ class AIModelAgentSettingsTest extends TestCase
 
     public function testTheCatalogSettingsAreRead(): void
     {
-        $aIModel = $this->createLanguageModel(' Responses ', AIModel::REASONING_CONTEXT_ALL_TURNS);
+        $aIModel = $this->createLanguageModel(AIModel::AGENT_WIRE_API_RESPONSES, AIModel::REASONING_CONTEXT_ALL_TURNS);
 
         $this->assertSame(AIModel::AGENT_WIRE_API_RESPONSES, $aIModel->getAgentWireApi());
         $this->assertSame(AIModel::REASONING_CONTEXT_ALL_TURNS, $aIModel->getAgentReasoningContext());
     }
 
-    public function testAnUnknownValueFallsBackToTheDefault(): void
+    public function testTheMessagesApiIsACatalogWireApi(): void
     {
-        $aIModel = $this->createLanguageModel('grpc', 'every_turn');
+        $aIModel = $this->createLanguageModel(AIModel::AGENT_WIRE_API_MESSAGES, null);
 
-        $this->assertSame(AIModel::AGENT_WIRE_API_CHAT_COMPLETIONS, $aIModel->getAgentWireApi());
-        $this->assertNull($aIModel->getAgentReasoningContext());
+        $this->assertSame(AIModel::AGENT_WIRE_API_MESSAGES, $aIModel->getAgentWireApi());
+        $this->assertContains(AIModel::AGENT_WIRE_API_MESSAGES, AIModel::CATALOG_AGENT_WIRE_APIS);
+    }
+
+    public function testTheWireApiIsReturnedAsWrittenAlsoWhenThisPackageDoesNotKnowIt(): void
+    {
+        $this->assertSame('grpc', $this->createLanguageModel('grpc', null)->getAgentWireApi(), 'the agent that reads the value decides what it speaks');
+        $this->assertSame(' Responses ', $this->createLanguageModel(' Responses ', null)->getAgentWireApi());
+        $this->assertSame(AIModel::AGENT_WIRE_API_CHAT_COMPLETIONS, $this->createLanguageModel('  ', null)->getAgentWireApi(), 'an empty value is no value');
+    }
+
+    public function testAnUnknownReasoningContextIsNotSent(): void
+    {
+        $this->assertNull($this->createLanguageModel(null, 'every_turn')->getAgentReasoningContext());
     }
 
     public function testTheSettingsHydrateFromACatalogEntry(): void

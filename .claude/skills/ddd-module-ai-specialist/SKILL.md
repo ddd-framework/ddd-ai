@@ -119,6 +119,7 @@ $model->settings->maxInputTokens;  // 1050000
 - `MODEL_OPENAI_GPT5_6_LUNA` -- superseded 2026-09-24, kept without a tier (historical eval numbers refer to it)
 - `MODEL_GOOGLE_GEMINI_3_5_FLASH`, `MODEL_ZAI_GLM_5_2`, `MODEL_MINIMAX_M3` -- other tier/scope picks
 - `MODEL_ANTHROPIC_CLAUDE_OPUS_5_5`, `MODEL_ANTHROPIC_CLAUDE_SONNET_5`, `MODEL_ANTHROPIC_CLAUDE_FABLE_5_1` -- the Claude 5 family (2.0.0); Opus 4.8 and Sonnet 4.6 were REMOVED in the same release
+- `MODEL_ANTHROPIC_CLAUDE_SONNET_5_5`, `MODEL_ANTHROPIC_CLAUDE_HAIKU_5_5`, `MODEL_ANTHROPIC_CLAUDE_FABLE_5_2` -- the 5.5 line and Fable 5.2 (3.5.0), no measured speed or benchmark yet. Sonnet 5.5 and Fable 5.2 reject a forced tool choice, Haiku 5.5 accepts it. Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1 and Fable 5.2 name `agentWireApi: messages`; Sonnet 5 (no mid-conversation tool additions) and Haiku 4.5 (no adaptive thinking) stay on Chat Completions
 - `MODEL_TYPESAFE_JEV_1_13` -- decision model, see below
 - `MODEL_OPENAI_TEXT_EMBEDDING_3_SMALL` -- Embeddings
 
@@ -321,9 +322,26 @@ try {
 - A Messenger worker empties the service before every consumed job (it is a worker state resetter) — never reset it
   in a handler.
 
-Agent settings in the model catalog: `settings.agentWireApi` (`chatCompletions` / `responses`) and
+Agent settings in the model catalog: `settings.agentWireApi` (`chatCompletions` / `responses` / `messages`) and
 `settings.agentReasoningContext` (`all_turns` / `current_turn` / `auto`), read with `AIModel::getAgentWireApi()` /
-`getAgentReasoningContext()`; an unknown value is logged and answers the default.
+`getAgentReasoningContext()`. `getAgentWireApi()` returns the value AS WRITTEN (absent or empty = Chat Completions)
+and does not check it: the agent validates it and speaks Chat Completions for a value it does not know, so a new wire
+API needs no ddd-ai release. (`getAgentReasoningContext()` still answers null for a value outside
+`REASONING_CONTEXTS`.) `agentWireApi` names the wire a model works best on (its native one): `messages` = the Anthropic Messages API (signed thinking blocks that are sent
+back, a report of every block the provider dropped, mid-conversation system messages and tool additions),
+`responses` = the OpenAI Responses API, absent = Chat Completions. The package catalog sets `messages` on the Claude
+models probed on it; a host overrides the key per model in its own `config/app/AI/models.php`. An agent that cannot
+serve the named wire on its egress falls back to Chat Completions (mgamadeus/ddd-agents >= 0.2.0; older agent
+versions do not know `messages`, hence the Composer conflict).
+
+Answers of a wire API the trait does not know: the trait reads Chat Completions, OpenAI Responses and Gemini-native
+answers and composes no Messages request. A repo that speaks another wire API (the agent egress on the Anthropic
+Messages API) builds its body itself and overrides four protected hooks for its answer shape:
+`isAnswerObjectWithoutEnvelope()` (default: an object with `choices`; asked by `unwrapAIModelResponse()`),
+`extractAnswerText()` and `extractAnswerUsage()` (defaults: the Responses readers, which read only a Responses
+answer, `isOpenAIResponsesAnswer()`; null falls through to the Chat and Gemini readers) and `extractToolCallsFromResponse()` (calls in the Chat-Completions shape). Usage convention of
+`AIModelCallUsage`: `inputTokens` is the whole input (uncached + cache read + cache write), `cachedInputTokens` and
+`cacheWriteTokens` are parts of it, `reasoningOutputTokens` is part of `outputTokens`.
 
 ## Request shape and egress (3.0)
 

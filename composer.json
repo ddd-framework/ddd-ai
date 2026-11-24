@@ -8,7 +8,7 @@
         "issues": "https://github.com/ddd-framework/ddd-ai/issues",
         "source": "https://github.com/ddd-framework/ddd-ai"
     },
-    "version": "3.4.8",
+    "version": "3.5.0",
     "authors": [
         {
             "name": "Marius-Eugen Gerdan",
@@ -20,6 +20,9 @@
         "mgamadeus/ddd": "^3.40.0",
         "mgamadeus/ddd-common-money": "^1.1.1",
         "gioni06/gpt3-tokenizer": "^1.2"
+    },
+    "conflict": {
+        "mgamadeus/ddd-agents": "<0.2.0"
     },
     "autoload": {
         "psr-4": {

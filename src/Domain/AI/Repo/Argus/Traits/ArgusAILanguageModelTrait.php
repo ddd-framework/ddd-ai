@@ -1454,7 +1454,7 @@ trait ArgusAILanguageModelTrait
 
         $this->extractVendorSpecificResponseData($responseObject);
 
-        $loadResult = $this->extractOpenAIResponsesText($responseObject);
+        $loadResult = $this->extractAnswerText($responseObject);
 
         // Prefer OpenAI-like structure if present (works for your current Gemini gateway response)
         if ($loadResult === null) {
@@ -1477,7 +1477,7 @@ trait ArgusAILanguageModelTrait
 
         // Tokens/usage: support both OpenAI and Gemini usage fields
         $providerReportedCost = $this->extractProviderReportedUsageCost($responseObject);
-        $responsesUsage = $this->extractOpenAIResponsesUsage($responseObject);
+        $responsesUsage = $this->extractAnswerUsage($responseObject);
         if ($responsesUsage !== null) {
             // the written cache tokens are booked like on Chat Completions: priced at the write multiple only when the
             // request named a write lifetime ({@see getPromptCacheWriteTtl()})
@@ -1807,10 +1807,41 @@ trait ArgusAILanguageModelTrait
      */
     protected function unwrapAIModelResponse(mixed $callResponseData): mixed
     {
-        if (is_object($callResponseData) && isset($callResponseData->choices)) {
+        if (is_object($callResponseData) && $this->isAnswerObjectWithoutEnvelope($callResponseData)) {
             return $callResponseData;
         }
         return $this->getResponseDataFromArgusResponse($callResponseData);
+    }
+
+    /**
+     * Whether `$callResponseData` is the model's answer itself, sent without the status/data envelope: a
+     * Chat-Completions payload (`choices`). A repo that speaks another wire API overrides this for its answer shape.
+     */
+    protected function isAnswerObjectWithoutEnvelope(object $callResponseData): bool
+    {
+        return isset($callResponseData->choices);
+    }
+
+    /**
+     * The text of the answer in a shape that is neither Chat Completions nor Gemini-native (those two are read by
+     * {@see handleLoadResponseInternal()} when this returns null): here the OpenAI Responses shape
+     * ({@see extractOpenAIResponsesText()}). A repo that speaks another wire API overrides this for its answer shape.
+     */
+    protected function extractAnswerText(object $responseObject): ?string
+    {
+        return $this->extractOpenAIResponsesText($responseObject);
+    }
+
+    /**
+     * The token usage of the answer, unpriced, in a shape that is neither Chat Completions nor Gemini-native: here the
+     * OpenAI Responses shape ({@see extractOpenAIResponsesUsage()}); null leaves the usage to the other readers. A
+     * repo that speaks another wire API overrides this for its answer shape. The convention of the returned counts:
+     * `inputTokens` is the WHOLE input (uncached remainder + cache read + cache write), `cachedInputTokens` and
+     * `cacheWriteTokens` are parts of it, `reasoningOutputTokens` is part of `outputTokens`.
+     */
+    protected function extractAnswerUsage(object $responseObject): ?AIModelCallUsage
+    {
+        return $this->extractOpenAIResponsesUsage($responseObject);
     }
 
     /**
@@ -2062,8 +2093,28 @@ trait ArgusAILanguageModelTrait
         return null;
     }
 
+    /**
+     * Whether the answer is an OpenAI Responses object: `object: "response"`, or an `output` list without `choices`,
+     * or the `output_text` shorthand. The Responses readers ({@see extractOpenAIResponsesText()},
+     * {@see extractOpenAIResponsesUsage()}) read nothing from any other shape: another wire API may name its usage
+     * with the same keys (`input_tokens`, `output_tokens`) and count them differently.
+     */
+    protected function isOpenAIResponsesAnswer(object $responseObject): bool
+    {
+        return ($responseObject->object ?? null) === 'response'
+            || (isset($responseObject->output) && is_array($responseObject->output) && !isset($responseObject->choices))
+            || (isset($responseObject->output_text) && is_string($responseObject->output_text));
+    }
+
+    /**
+     * The text of an OpenAI Responses answer: its `output_text` parts in order, else the `output_text` shorthand;
+     * null for an answer without text and for an answer of another shape ({@see isOpenAIResponsesAnswer()}).
+     */
     protected function extractOpenAIResponsesText(object $responseObject): ?string
     {
+        if (!$this->isOpenAIResponsesAnswer($responseObject)) {
+            return null;
+        }
         $texts = [];
 
         if (isset($responseObject->output) && is_array($responseObject->output)) {
@@ -2095,11 +2146,11 @@ trait ArgusAILanguageModelTrait
 
     /**
      * The token usage of an OpenAI Responses answer (`usage.input_tokens` / `output_tokens` and their details), unpriced;
-     * null when the answer carries no Responses usage.
+     * null when the answer carries no Responses usage or is no Responses answer ({@see isOpenAIResponsesAnswer()}).
      */
     protected function extractOpenAIResponsesUsage(object $responseObject): ?AIModelCallUsage
     {
-        if (!isset($responseObject->usage)) {
+        if (!isset($responseObject->usage) || !$this->isOpenAIResponsesAnswer($responseObject)) {
             return null;
         }
 

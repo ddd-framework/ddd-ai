@@ -64,9 +64,8 @@ class AILanguageModelSetting extends AIModelSetting
     public ?PromptCacheWritePrices $promptCacheWritePrices = null;
 
     /**
-     * @var string|null The wire API an agent speaks to this model: one of {@see AIModel::CATALOG_AGENT_WIRE_APIS}, in
-     * any case. Null = Chat Completions. Read through {@see AIModel::getAgentWireApi()}, which answers the default for
-     * an unknown value.
+     * @var string|null The wire API an agent speaks to this model, e.g. one of {@see AIModel::CATALOG_AGENT_WIRE_APIS}.
+     * Null = Chat Completions. Stored and returned as written ({@see AIModel::getAgentWireApi()}); the agent checks it.
      */
     public ?string $agentWireApi = null;
 
