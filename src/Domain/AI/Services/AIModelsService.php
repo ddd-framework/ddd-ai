@@ -124,6 +124,12 @@ class AIModelsService extends Service
             );
         }
 
+        // Whether an agent sends the model's own reasoning of earlier calls back (null = the caller's default)
+        $aiModel->previousReasoningCarryOver = isset($modelConfig['previousReasoningCarryOver'])
+            && in_array((string)$modelConfig['previousReasoningCarryOver'], AIModel::PREVIOUS_REASONING_CARRY_OVERS, true)
+            ? (string)$modelConfig['previousReasoningCarryOver']
+            : null;
+
         // Whether a request with tools carries parallel_tool_calls (null = not decided, sent as before)
         $aiModel->supportsParallelToolCalls = isset($modelConfig['supportsParallelToolCalls']) ? (bool)$modelConfig['supportsParallelToolCalls'] : null;
 

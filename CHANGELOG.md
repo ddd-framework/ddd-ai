@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.4.7
+
+- Model catalog `previousReasoningCarryOver` (`AIModel::PREVIOUS_REASONING_CARRY_OVERS`: off, currentTurn, capped, all;
+  host-overridable): whether an agent sends the model's own reasoning items of earlier calls back
+  (`AIModel::getPreviousReasoningCarryOver()`, null = the caller's default). Kimi K3.1 Pro: `currentTurn` (it keeps its
+  verdicts in its reasoning, not in its visible text).
+
 ## 3.4.6
 
 - Model catalog: `transportTimeoutSeconds` (int, optional, overridable per model in the host's

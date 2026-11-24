@@ -1827,6 +1827,11 @@ return [
         'supportsParallelToolCalls' => false,
         // one attempt gives up after 120 s (a hanging host behind OpenRouter kept the connection open for 300 s)
         'transportTimeoutSeconds' => 120,
+        // Kimi keeps its verdicts (what it saw on pictures, what it decided) in its reasoning, not in its visible text:
+        // without its earlier calls' reasoning_details it re-reads the same pictures. The current turn's items only —
+        // they stay a stable prefix (automatic prefix cache, $0.20/M) and end with the turn; `capped` would cut the
+        // early steps of a long picture-checking turn first
+        'previousReasoningCarryOver' => AIModel::PREVIOUS_REASONING_CARRY_OVER_CURRENT_TURN,
         'agentEligible' => false,
         'externalId' => 'kimi-k3.1-pro',
         'openRouterExternalId' => 'moonshotai/kimi-k3.1-pro',
