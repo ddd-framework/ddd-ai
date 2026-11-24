@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.4.8
+
+- Model catalog `supportsForcedToolChoice` (?bool, explicit on every tool model, host-overridable):
+  `AIModel::acceptsForcedToolChoice()` is false for Claude Opus 5.5 and Claude Fable 5.1, which answer a forced
+  `tool_choice` (`required` or a named function; Messages API `any` / a named tool) with a 400 (`tool_choice: type
+  "tool" and "any" are not supported for this model.`); null = not decided (forced as before).
+
 ## 3.4.7
 
 - Model catalog `previousReasoningCarryOver` (`AIModel::PREVIOUS_REASONING_CARRY_OVERS`: off, currentTurn, capped, all;

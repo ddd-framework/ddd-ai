@@ -29,6 +29,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-4o',
         'openRouterExternalId' => 'openai/gpt-4o',
         'isReasoningModel' => false,
@@ -56,6 +57,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-4o-mini',
         'openRouterExternalId' => 'openai/gpt-4o-mini',
         'isReasoningModel' => false,
@@ -88,6 +90,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-4.1',
         'openRouterExternalId' => 'openai/gpt-4.1',
         'isReasoningModel' => false,
@@ -119,6 +122,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-4.1-mini',
         'openRouterExternalId' => 'openai/gpt-4.1-mini',
         'isReasoningModel' => false,
@@ -150,6 +154,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-4.1-nano',
         'openRouterExternalId' => 'openai/gpt-4.1-nano',
         'isReasoningModel' => false,
@@ -182,6 +187,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5',
         // Agentic: base GPT-5 over-reasons at default effort → slow (~57s) + reasoning-only empty-turn stalls. Low.
         'agenticUseCase' => ['reasoningEffort' => 'low'],
@@ -214,6 +220,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5-mini',
         'openRouterExternalId' => 'openai/gpt-5-mini',
         'isReasoningModel' => true,
@@ -244,6 +251,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5-nano',
         'openRouterExternalId' => 'openai/gpt-5-nano',
         'isReasoningModel' => true,
@@ -283,6 +291,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.4',
         // Agentic: low–medium; high → tangential tool-calling/stalls. Low for fast, zielgerichtete tool-calls.
         'agenticUseCase' => ['reasoningEffort' => 'low'],
@@ -312,6 +321,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.4-pro',
         'openRouterExternalId' => 'openai/gpt-5.4-pro',
         'isReasoningModel' => true,
@@ -344,6 +354,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.4-mini',
         // Agentic: low fixes the verified load_skills→reasoning-only empty-turn stall (eval 2026-06).
         'agenticUseCase' => ['reasoningEffort' => 'low'],
@@ -375,6 +386,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.4-nano',
         'openRouterExternalId' => 'openai/gpt-5.4-nano',
         'isReasoningModel' => true,
@@ -407,6 +419,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'o3',
         'openRouterExternalId' => 'openai/o3',
         'isReasoningModel' => true,
@@ -496,6 +509,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-oss-120b',
         'openRouterExternalId' => 'openai/gpt-oss-120b',
         'isReasoningModel' => true,
@@ -526,6 +540,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-oss-20b',
         'openRouterExternalId' => 'openai/gpt-oss-20b',
         'isReasoningModel' => true,
@@ -554,6 +569,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_META,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'llama-3.1-8b-instruct',
         'openRouterExternalId' => 'meta-llama/llama-3.1-8b-instruct',
         'isReasoningModel' => true,
@@ -872,6 +888,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-2.5-pro',
         'openRouterExternalId' => 'google/gemini-2.5-pro',
         'isReasoningModel' => true,
@@ -911,6 +928,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-2.5-flash',
         // Agentic: low thinking budget for fast, zielgerichtete tool-calls (hybrid reasoning model).
         'agenticUseCase' => ['reasoningEffort' => 'low'],
@@ -982,6 +1000,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-3-flash-preview',
         'openRouterExternalId' => 'google/gemini-3-flash-preview',
         'isReasoningModel' => true,
@@ -1015,6 +1034,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-3.1-pro-preview',
         // Agentic: thinking_level medium (default high). temperature stays null → provider default 1.0 (Gemini 3.x mandates it).
         'agenticUseCase' => ['reasoningEffort' => 'medium'],
@@ -1065,6 +1085,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         // The preview was shut down 2026-05-25 (https://ai.google.dev/gemini-api/docs/deprecations); the GA
         // ids replace it at unchanged prices. Calls with the preview id fail.
         'externalId' => 'gemini-3.1-flash-lite',
@@ -1126,6 +1147,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_ANTHROPIC,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'claude-haiku-4-5-20251001',
         // Agentic: low — Haiku 4.5 has no effort param (manual budget); via the proxy, low effort enables a small
         // thinking budget (thinking is off by default but beneficial for tool use). Keeps it fast.
@@ -1164,6 +1186,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_ANTHROPIC,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => false,
         'externalId' => 'claude-opus-5-5',
         'agenticUseCase' => ['reasoningEffort' => 'high'],
         'openRouterExternalId' => 'anthropic/claude-opus-5.5',
@@ -1199,6 +1222,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_ANTHROPIC,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'claude-sonnet-5',
         'agenticUseCase' => ['reasoningEffort' => 'medium'],
         'openRouterExternalId' => 'anthropic/claude-sonnet-5',
@@ -1234,6 +1258,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_ANTHROPIC,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => false,
         'externalId' => 'claude-fable-5-1',
         'agenticUseCase' => ['reasoningEffort' => 'high'],
         'openRouterExternalId' => 'anthropic/claude-fable-5.1',
@@ -1266,6 +1291,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_XAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'grok-4.3',
         'openRouterExternalId' => 'x-ai/grok-4.3',
         'isReasoningModel' => true,
@@ -1288,6 +1314,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_XAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'grok-4.20',
         'openRouterExternalId' => 'x-ai/grok-4.20',
         'isReasoningModel' => true,
@@ -1331,6 +1358,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.5',
         // Agentic: medium is the vendor-default balance; precise tool selection on large surfaces.
         'agenticUseCase' => ['reasoningEffort' => 'medium'],
@@ -1356,6 +1384,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.5-pro',
         'openRouterExternalId' => 'openai/gpt-5.5-pro',
         'isReasoningModel' => true,
@@ -1409,6 +1438,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-5.6-luna',
         // Agentic: `low` mirrors GPT-5.4-mini — the same OpenAI reasoning family, same known load_skills→reasoning-only
         // empty-turn stall. Re-tune only if an eval shows it under-reasons.
@@ -1460,6 +1490,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-6-sol',
         // Agentic: medium is the vendor default (effort levels none / low / medium / high / xhigh / max); the premium
         // model is chosen for quality, so it keeps the balanced default rather than Luna's `low`.
@@ -1498,6 +1529,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-6.1-sol',
         'openRouterExternalId' => 'openai/gpt-6.1-sol',
         'isReasoningModel' => true,
@@ -1537,6 +1569,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-6.2-sol',
         'openRouterExternalId' => 'openai/gpt-6.2-sol',
         'isReasoningModel' => true,
@@ -1590,6 +1623,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_OPENAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-6-luna',
         // Agentic: `low`, carried over from 5.6 Luna (same reasoning family, same load_skills→reasoning-only
         // empty-turn stall class). Re-tune only if an eval shows it under-reasons.
@@ -1647,6 +1681,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-3.5-flash',
         'openRouterExternalId' => 'google/gemini-3.5-flash',
         'isReasoningModel' => true,
@@ -1696,6 +1731,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-3.6-flash',
         'openRouterExternalId' => 'google/gemini-3.6-flash',
         'isReasoningModel' => true,
@@ -1730,6 +1766,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-3.8-flash',
         'openRouterExternalId' => 'google/gemini-3.8-flash',
         'isReasoningModel' => true,
@@ -1761,6 +1798,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_GOOGLE,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'gemini-2.5-flash-lite',
         'openRouterExternalId' => 'google/gemini-2.5-flash-lite',
         'isReasoningModel' => true,
@@ -1787,6 +1825,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_MOONSHOT,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'agentEligible' => false,
         'agentTier' => AIModel::AGENT_TIER_STANDARD,
         'externalId' => 'kimi-k3',
@@ -1825,6 +1864,7 @@ return [
         // OpenRouter endpoints API 2026-11-23: no allowed endpoint accepts parallel_tool_calls; with requireParameters
         // the request would find no endpoint (404 "No endpoints found that can handle the requested parameters")
         'supportsParallelToolCalls' => false,
+        'supportsForcedToolChoice' => true,
         // one attempt gives up after 120 s (a hanging host behind OpenRouter kept the connection open for 300 s)
         'transportTimeoutSeconds' => 120,
         // Kimi keeps its verdicts (what it saw on pictures, what it decided) in its reasoning, not in its visible text:
@@ -1900,6 +1940,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_MINIMAX,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'agentTier' => AIModel::AGENT_TIER_CHEAP,
         // MEMORY-CURATOR ONLY — held out of the live agent loop: tool-calling is not uniform across OpenRouter
         // providers and the reasoning pass is too slow/costly for the interactive agent. Stays in the CHEAP tier band
@@ -1933,6 +1974,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_ALIBABA,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'agentTier' => AIModel::AGENT_TIER_CHEAP,
         // Instruct (non-thinking) 2507. NOTE: OpenRouter slug has NO "-instruct-" segment — the bare
         // "...-a22b-2507" IS the instruct build ("...-thinking-2507" is the reasoning sibling). Routes via the
@@ -1979,6 +2021,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_MOONSHOT,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         // The bare "moonshotai/kimi-k2" is served ONLY by Novita on OpenRouter, which is NOT in the proxy
         // allowlist (→ 404 "no allowed providers"). The maintained "-0905" build IS served by Groq (allowed,
         // fast), so it is the usable Kimi K2 slug here. Cost reflects the Groq endpoint ($1.00/$3.00 per 1M).
@@ -2020,6 +2063,7 @@ return [
         'type' => AIModel::TYPE_LANGUAGE,
         'vendor' => AIModel::VENDOR_ZAI,
         'supportsParallelToolCalls' => true,
+        'supportsForcedToolChoice' => true,
         'externalId' => 'glm-5.2',
         'openRouterExternalId' => 'z-ai/glm-5.2',
         'isReasoningModel' => true,

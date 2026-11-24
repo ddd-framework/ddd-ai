@@ -734,6 +734,16 @@ class AIModel extends Entity
      */
     public ?bool $supportsParallelToolCalls = null;
 
+    /**
+     * @var bool|null Whether the model accepts a FORCED tool choice (`tool_choice: "required"` or a named function on
+     *      Chat Completions, `any` / a named tool on the Messages API). False for models with always-on thinking that
+     *      answer a forced choice with a 400 (Claude Opus 5.5, Sonnet 5.5, Fable 5.1+); an agent then sends `auto` and
+     *      says in the prompt which tool to call. Explicit per catalog model; a host overrides it in its own
+     *      `config/app/AI/models.php`. Null = not decided (forced, as before); read through
+     *      {@see self::acceptsForcedToolChoice()}.
+     */
+    public ?bool $supportsForcedToolChoice = null;
+
     /** The model's own reasoning items of a previous call are never sent back */
     public const string PREVIOUS_REASONING_CARRY_OVER_OFF = 'off';
 
@@ -994,6 +1004,12 @@ class AIModel extends Entity
     public function getEstimatedImageInputTokens(): int
     {
         return 1100;
+    }
+
+    /** Whether a forced tool choice may be sent (false only when the catalog says the model rejects it) */
+    public function acceptsForcedToolChoice(): bool
+    {
+        return $this->supportsForcedToolChoice !== false;
     }
 
     /** Whether a request with tools carries `parallel_tool_calls` (false only when the catalog says the model does not accept it) */

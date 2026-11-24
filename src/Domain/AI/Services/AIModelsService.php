@@ -133,6 +133,9 @@ class AIModelsService extends Service
         // Whether a request with tools carries parallel_tool_calls (null = not decided, sent as before)
         $aiModel->supportsParallelToolCalls = isset($modelConfig['supportsParallelToolCalls']) ? (bool)$modelConfig['supportsParallelToolCalls'] : null;
 
+        // Whether a forced tool choice may be sent (null = not decided, forced as before)
+        $aiModel->supportsForcedToolChoice = isset($modelConfig['supportsForcedToolChoice']) ? (bool)$modelConfig['supportsForcedToolChoice'] : null;
+
         // The total timeout of one HTTP attempt in seconds (null = the default)
         $aiModel->transportTimeoutSeconds = isset($modelConfig['transportTimeoutSeconds']) && (int)$modelConfig['transportTimeoutSeconds'] > 0
             ? (int)$modelConfig['transportTimeoutSeconds']
