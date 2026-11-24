@@ -8,6 +8,7 @@ use DDD\Domain\AI\Entities\ModelCalls\AIModelCall;
 use DDD\Domain\AI\Entities\ModelCalls\AIModelCallUsage;
 use DDD\Domain\AI\Entities\ModelCalls\ModelCallSettings;
 use DDD\Domain\AI\Entities\Models\AIModel;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelProviderFilters;
 use DDD\Domain\AI\Entities\Models\Selection\ModelManagerPolicy;
 use DDD\Domain\AI\Entities\Models\Selection\ModelSelectionContext;
 use DDD\Domain\AI\Entities\Prompts\AIPrompt;
@@ -916,6 +917,26 @@ trait ArgusAILanguageModelTrait
     public ?object $lastRawResponse = null;
 
     /**
+     * @var int How many positions the OpenRouter `order` of this request is rotated: the caller's retry count after a
+     *      transport failure or a 5xx/429 of the router, so the retry asks the next host first
+     *      ({@see AIModelProviderFilters::rotateOrderOfProviderBlock()}). 0 = the catalog order.
+     */
+    public int $providerOrderRotation = 0;
+
+    /**
+     * @var int|null The HTTP status of the LAST response (the recorded status of the operation, else the gateway
+     *      envelope's `status_code`); null when no response arrived or no status is known. Read by a caller that retries
+     *      a 5xx or 429 of the router.
+     */
+    public ?int $lastResponseStatusCode = null;
+
+    /** @return array<string, mixed>|null The headers of the LAST response (null when none arrived) */
+    public function getLastResponseHeaders(): ?array
+    {
+        return $this->httpResponseHeaders;
+    }
+
+    /**
      * The gates every model call passes before its body is built (the head of {@see getLoadPayloadInternal()}, kept in
      * one method so a repo that composes its own body runs exactly the same gates), each a stage of the application's
      * {@see AIModelCallGateService}: what the call requires before a model is resolved; the model; the eligibility of
@@ -1358,6 +1379,8 @@ trait ArgusAILanguageModelTrait
         // DEBUG: capture the raw response (object only — the ?object property would throw on a non-object; this guard
         // makes the shared trait safe for ANY Argus model/path). Flag-gated persist happens in performTurn.
         $this->lastRawResponse = is_object($callResponseData) ? $callResponseData : null;
+        $this->lastResponseStatusCode = $apiOperation?->responseStatusCode
+            ?? (is_object($callResponseData) && isset($callResponseData->status_code) && is_numeric($callResponseData->status_code) ? (int)$callResponseData->status_code : null);
 
         $retryableStatusCodes = [503];
         $statusCode = isset($callResponseData->status_code) ? (int)$callResponseData->status_code : null;
@@ -1860,6 +1883,10 @@ trait ArgusAILanguageModelTrait
         if (!isset($providerPreference['order']) && !empty($argusLanguageModel?->preferredProviders)) {
             $providerPreference['order'] = array_values($argusLanguageModel->preferredProviders);
             $providerPreference['allow_fallbacks'] = true;
+        }
+        // a retry after a hung or failed attempt asks the next host first (never on an explicit console pin)
+        if ($consoleOrder === null && $this->providerOrderRotation > 0) {
+            $providerPreference = AIModelProviderFilters::rotateOrderOfProviderBlock($providerPreference, $this->providerOrderRotation);
         }
 
         return $providerPreference !== [] ? $providerPreference : null;

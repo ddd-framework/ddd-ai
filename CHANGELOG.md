@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.4.6
+
+- Model catalog: `transportTimeoutSeconds` (int, optional, overridable per model in the host's
+  `config/app/AI/models.php`): the total time one HTTP attempt to the model may take (`AIModel::getTransportTimeoutSeconds()`,
+  default `DEFAULT_TRANSPORT_TIMEOUT_SECONDS` 300). Kimi K3.1 Pro: 120 s — a hanging host behind OpenRouter held the
+  connection for 300 s with padding bytes, so only a total timeout per attempt fires.
+- Language-model repos: `$providerOrderRotation` rotates the OpenRouter `order` of a request
+  (`AIModelProviderFilters::rotateOrderOfProviderBlock()`, only `order` changes — `only`, `ignore`, `quantizations`,
+  `data_collection` and `allow_fallbacks` stay; never on a console pin), for a retry that should ask the next host
+  first; `$lastResponseStatusCode` and `getLastResponseHeaders()` describe the last response.
+
 ## 3.4.5
 
 - Model catalog: `supportsParallelToolCalls` (bool, explicit per language model, overridable per model in the host's

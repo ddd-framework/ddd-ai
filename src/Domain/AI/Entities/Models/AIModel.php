@@ -734,6 +734,20 @@ class AIModel extends Entity
      */
     public ?bool $supportsParallelToolCalls = null;
 
+    /** @var int The transport timeout of a call when the catalog sets none (the language-model repos' DEFAULT_ARGUS_TIMEOUT) */
+    public const int DEFAULT_TRANSPORT_TIMEOUT_SECONDS = 300;
+
+    /**
+     * @var int|null The total time one HTTP attempt of a call to this model may take, in seconds, before the transfer is
+     *      given up (a cURL timeout → a transport failure the caller may retry). A total timeout per attempt is the
+     *      one that reliably fires: a router (OpenRouter) keeps a hanging upstream connection alive with padding bytes,
+     *      so an idle or first-byte timeout on raw bytes never triggers. Set it lower for routes whose hosts can hang
+     *      (open-weight models behind a router), so an interactive caller retries early. Explicit per catalog model; a
+     *      host overrides it in its own `config/app/AI/models.php`. Null = {@see self::DEFAULT_TRANSPORT_TIMEOUT_SECONDS};
+     *      read through {@see self::getTransportTimeoutSeconds()}.
+     */
+    public ?int $transportTimeoutSeconds = null;
+
     /**
      * @var AILanguageModelSetting|AIImageModelSetting The Settings of the Model.
      *      Hydrated as AILanguageModelSetting for TYPE_LANGUAGE / TYPE_AUDIO / TYPE_EMBEDDINGS,
@@ -955,6 +969,14 @@ class AIModel extends Entity
     public function sendsParallelToolCalls(): bool
     {
         return $this->supportsParallelToolCalls !== false;
+    }
+
+    /** The total timeout of one HTTP attempt to this model in seconds (the catalog's value, else the default) */
+    public function getTransportTimeoutSeconds(): int
+    {
+        return $this->transportTimeoutSeconds !== null && $this->transportTimeoutSeconds > 0
+            ? $this->transportTimeoutSeconds
+            : self::DEFAULT_TRANSPORT_TIMEOUT_SECONDS;
     }
 
     /** The catalog's prompt-cache mode for this model; {@see self::PROMPT_CACHE_MODE_NONE} when it declares none. */

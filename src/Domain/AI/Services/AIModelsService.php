@@ -127,6 +127,11 @@ class AIModelsService extends Service
         // Whether a request with tools carries parallel_tool_calls (null = not decided, sent as before)
         $aiModel->supportsParallelToolCalls = isset($modelConfig['supportsParallelToolCalls']) ? (bool)$modelConfig['supportsParallelToolCalls'] : null;
 
+        // The total timeout of one HTTP attempt in seconds (null = the default)
+        $aiModel->transportTimeoutSeconds = isset($modelConfig['transportTimeoutSeconds']) && (int)$modelConfig['transportTimeoutSeconds'] > 0
+            ? (int)$modelConfig['transportTimeoutSeconds']
+            : null;
+
         // Optional agentic-benchmark evidence, parallel to settings (BFCL, τ-bench, GAIA, …). Each entry is a
         // {benchmark, score 0–100, sourceUrl, asOf} datapoint; the blended agentic-intelligence score is computed
         // by AIModelBenchmarks::getAgenticIntelligenceScore(). Absent → null (unrated), no behaviour change.

@@ -139,6 +139,27 @@ class AIModelProviderFilters extends ValueObject
     /**
      * Whether this filter carries any directive at all (else applying it is a no-op).
      */
+    /**
+     * The provider block with its `order` rotated by `$positions` (the first entries move to the end): a retry of a call
+     * whose attempt hung on the first host asks the next host first. Only `order` changes — `only`, `ignore`,
+     * `quantizations`, `data_collection` and `allow_fallbacks` stay as they are, so a retry never widens the hosts a
+     * model may run on. A block without an `order` of two or more entries is returned unchanged.
+     *
+     * @param array<string, mixed> $providerBlock
+     * @return array<string, mixed>
+     */
+    public static function rotateOrderOfProviderBlock(array $providerBlock, int $positions): array
+    {
+        $order = $providerBlock['order'] ?? null;
+        if ($positions <= 0 || !is_array($order) || count($order) < 2) {
+            return $providerBlock;
+        }
+        $order = array_values($order);
+        $shift = $positions % count($order);
+        $providerBlock['order'] = array_merge(array_slice($order, $shift), array_slice($order, 0, $shift));
+        return $providerBlock;
+    }
+
     public function hasAnyDirective(): bool
     {
         return $this->order !== [] || $this->ignore !== [] || $this->allowFallbacks !== null || $this->only !== []

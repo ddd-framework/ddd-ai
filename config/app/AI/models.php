@@ -1825,6 +1825,8 @@ return [
         // OpenRouter endpoints API 2026-11-23: no allowed endpoint accepts parallel_tool_calls; with requireParameters
         // the request would find no endpoint (404 "No endpoints found that can handle the requested parameters")
         'supportsParallelToolCalls' => false,
+        // one attempt gives up after 120 s (a hanging host behind OpenRouter kept the connection open for 300 s)
+        'transportTimeoutSeconds' => 120,
         'agentEligible' => false,
         'externalId' => 'kimi-k3.1-pro',
         'openRouterExternalId' => 'moonshotai/kimi-k3.1-pro',

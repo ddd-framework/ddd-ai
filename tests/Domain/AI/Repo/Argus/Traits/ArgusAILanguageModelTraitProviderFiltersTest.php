@@ -86,4 +86,37 @@ class ArgusAILanguageModelTraitProviderFiltersTest extends TestCase
         self::assertSame(['order' => ['openai'], 'allow_fallbacks' => true], $openRouterBody['provider']);
         self::assertArrayNotHasKey('provider', $directProbe->buildLoadPayload()['body']);
     }
+
+    public function testARetryRotatesOnlyTheOrderAndNeverWidensTheHosts(): void
+    {
+        $rotatedOnce = AIModelProviderFilters::rotateOrderOfProviderBlock(self::KIMI_PROVIDER_BLOCK, 1);
+        self::assertSame(['fireworks', 'together', 'amazon-bedrock', 'deepinfra'], $rotatedOnce['order']);
+        $rotatedTwice = AIModelProviderFilters::rotateOrderOfProviderBlock(self::KIMI_PROVIDER_BLOCK, 2);
+        self::assertSame(['together', 'amazon-bedrock', 'deepinfra', 'fireworks'], $rotatedTwice['order']);
+        foreach (['ignore', 'allow_fallbacks', 'only', 'data_collection', 'require_parameters', 'quantizations'] as $unchangedKey) {
+            self::assertSame(self::KIMI_PROVIDER_BLOCK[$unchangedKey], $rotatedTwice[$unchangedKey], $unchangedKey);
+        }
+        self::assertSame(self::KIMI_PROVIDER_BLOCK, AIModelProviderFilters::rotateOrderOfProviderBlock(self::KIMI_PROVIDER_BLOCK, 0));
+        self::assertSame(['order' => ['deepinfra']], AIModelProviderFilters::rotateOrderOfProviderBlock(['order' => ['deepinfra']], 1));
+    }
+
+    public function testTheRequestOfARetryCarriesTheRotatedOrder(): void
+    {
+        $argusLanguageModelProbe = (new ArgusLanguageModelProbe())->useArgusLanguageModel(new ArgusLanguageModel(
+            defaultAIModelName: AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO,
+        ));
+        $argusLanguageModelProbe->providerOrderRotation = 1;
+
+        $providerBlock = $argusLanguageModelProbe->buildLoadPayload()['body']['provider'];
+
+        self::assertSame(['fireworks', 'together', 'amazon-bedrock', 'deepinfra'], $providerBlock['order']);
+        self::assertSame(self::KIMI_PROVIDER_BLOCK['only'], $providerBlock['only']);
+    }
+
+    public function testTheTransportTimeoutIsACatalogSetting(): void
+    {
+        $aiModelsService = new AIModelsService();
+        self::assertSame(120, $aiModelsService->getAIModelByName(AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO)->getTransportTimeoutSeconds());
+        self::assertSame(AIModel::DEFAULT_TRANSPORT_TIMEOUT_SECONDS, $aiModelsService->getAIModelByName(AIModel::MODEL_OPENAI_GPT5_4_MINI)->getTransportTimeoutSeconds());
+    }
 }
