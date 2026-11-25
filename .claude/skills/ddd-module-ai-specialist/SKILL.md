@@ -291,7 +291,10 @@ Stage order for a language model: `refuseModelCallWithoutUsageScopeOrEnvelope` â
 - **Session seconds** (a realtime voice session billed by time): `AISessionUsageService::recordSessionSeconds($aiModelCall,
   $seconds, ?$costsPerSessionSecond)` books through the same recorder; the usage carries `sessionSeconds` and
   `costs` = seconds Ã— the catalog's `costsPerSessionSecondInUSD` (`AIModelSetting::$costsPerSessionSecond`) or the
-  passed price. Unpriced = nothing booked (`costs` null on the returned usage). Book inside the session's envelope,
+  passed price. Unpriced = nothing booked (`costs` null on the returned usage).
+  The key is read for every type: a session-only model (realtime voice) is filed as `TYPE_AUDIO` with
+  `settings.costsPerSessionSecondInUSD`; only `TYPE_LANGUAGE` models are candidates of the automatic choice, so it
+  never answers a text turn. Book inside the session's envelope,
   under its usage scope and billed account; a long session may book in slices.
 - `enforceBudget: false` on the attribute skips the budget stages (infrastructure calls); usage is still recorded.
 

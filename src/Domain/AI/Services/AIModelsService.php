@@ -311,6 +311,16 @@ class AIModelsService extends Service
                 );
             }
             $aiModel->settings = $aiModelSetting;
+        } elseif (isset($modelConfig['settings']['costsPerSessionSecondInUSD'])) {
+            // Every other type (an AUDIO model reached through a live session, e.g. realtime voice): the price per
+            // session second is the one setting the package reads for it (on the settings class the property declares
+            // for these types). Only LANGUAGE models are candidates of the automatic model choice, so a model filed
+            // under another type never answers a text turn.
+            $aiModelSetting = new AILanguageModelSetting();
+            $aiModelSetting->costsPerSessionSecond = new MoneyAmount(
+                (float)$modelConfig['settings']['costsPerSessionSecondInUSD'], 'USD'
+            );
+            $aiModel->settings = $aiModelSetting;
         }
 
         return $aiModel;

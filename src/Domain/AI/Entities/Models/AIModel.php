@@ -787,8 +787,9 @@ class AIModel extends Entity
 
     /**
      * @var AILanguageModelSetting|AIImageModelSetting The Settings of the Model.
-     *      Hydrated as AILanguageModelSetting for TYPE_LANGUAGE / TYPE_AUDIO / TYPE_EMBEDDINGS,
-     *      and as AIImageModelSetting for TYPE_IMAGE.
+     *      Hydrated as AILanguageModelSetting for TYPE_LANGUAGE, as AIImageModelSetting for TYPE_IMAGE; a model of
+     *      another type (TYPE_AUDIO, TYPE_EMBEDDINGS) gets an AILanguageModelSetting only when its catalog entry carries
+     *      `costsPerSessionSecondInUSD` (the price of a live session, e.g. realtime voice), and no settings otherwise.
      */
     public AILanguageModelSetting|AIImageModelSetting $settings;
 

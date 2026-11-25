@@ -89,4 +89,33 @@ class AISessionUsageServiceTest extends TestCase
 
         self::assertSame(0.0015, $aiModel->settings->costsPerSessionSecond->amount);
     }
+
+    public function testAnAudioModelKeepsItsPricePerSessionSecondAndIsNoCandidateOfTheAutomaticChoice(): void
+    {
+        $aiModelsService = new class extends AIModelsService {
+            public function hydrate(array $modelConfig): AIModel
+            {
+                return $this->createAIModelFromConfig('TEST.LIVE_VOICE_PROBE', $modelConfig);
+            }
+        };
+
+        $aiModel = $aiModelsService->hydrate(['type' => AIModel::TYPE_AUDIO, 'settings' => ['costsPerSessionSecondInUSD' => 0.0008]]);
+
+        self::assertSame(0.0008, $aiModel->settings->costsPerSessionSecond->amount);
+        self::assertSame(0.008, $aiModel->settings->getEstimatedCostsForSessionSeconds(10)->amount);
+    }
+
+    public function testAModelOfAnotherTypeWithoutASessionPriceGetsNoSettings(): void
+    {
+        $aiModelsService = new class extends AIModelsService {
+            public function hydrate(array $modelConfig): AIModel
+            {
+                return $this->createAIModelFromConfig('TEST.EMBEDDINGS_PROBE', $modelConfig);
+            }
+        };
+
+        $aiModel = $aiModelsService->hydrate(['type' => AIModel::TYPE_EMBEDDINGS, 'settings' => []]);
+
+        self::assertFalse(isset($aiModel->settings));
+    }
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.8.2
+
+- **The price per session second is read for every model type.** `settings.costsPerSessionSecondInUSD` of an `AUDIO`
+  (or `EMBEDDINGS`) catalog entry is hydrated (an `AILanguageModelSetting` carrying only the price), so a session-only
+  model such as a realtime voice model is priced by `AISessionUsageService::recordSessionSeconds()`. Before, only
+  `LANGUAGE` and `IMAGE` entries kept it, and an application restored it with an override. File a session-only model
+  as `AUDIO`: only `LANGUAGE` models are candidates of the automatic model choice, so it never answers a text turn. An
+  entry of another type without the key keeps no settings, as before. Tests.
+
 ## 3.8.1
 
 - Catalog: GPT-6 Luna and GPT-6.2 Sol state their reasoning carry-over (`capped` at 1,000) under
