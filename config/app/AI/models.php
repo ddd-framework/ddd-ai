@@ -660,6 +660,32 @@ return [
         ],
     ],
 
+    // Realtime voice (Live API): billed by session time; AUDIO keeps them out of the model selection by tier.
+    AIModel::MODEL_OPENAI_GPT_LIVE_1_1 => [
+        'type' => AIModel::TYPE_AUDIO,
+        'vendor' => AIModel::VENDOR_OPENAI,
+        'externalId' => 'gpt-live-1.1',
+        'openRouterExternalId' => null,
+        'isReasoningModel' => false,
+        'hasVisionCapabilities' => false,
+        'description' => 'Full-duplex realtime voice model: listens while it speaks, more accurate transcription and a steadier accent across languages than GPT-Live 1.',
+        'settings' => [
+            'costsPerSessionSecondInUSD' => 0.05 / 60,
+        ],
+    ],
+    AIModel::MODEL_OPENAI_GPT_LIVE_1 => [
+        'type' => AIModel::TYPE_AUDIO,
+        'vendor' => AIModel::VENDOR_OPENAI,
+        'externalId' => 'gpt-live-1',
+        'openRouterExternalId' => null,
+        'isReasoningModel' => false,
+        'hasVisionCapabilities' => false,
+        'description' => 'The first GPT-Live realtime voice model, replaced by GPT-Live 1.1; kept for the price of sessions run on it.',
+        'settings' => [
+            'costsPerSessionSecondInUSD' => 0.05 / 60,
+        ],
+    ],
+
     // ── Image generation models ────────────────────────────────────────────
     AIModel::MODEL_FLUXAI_1_1_PRO => [
         'type' => AIModel::TYPE_IMAGE,

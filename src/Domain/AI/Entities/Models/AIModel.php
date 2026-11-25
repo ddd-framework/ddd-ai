@@ -292,6 +292,18 @@ class AIModel extends Entity
     public const string MODEL_OPENAI_GPT4_O_MINI_TTS = 'OPENAI.GPT4_O_MINI_TTS';
 
     /**
+     * @var string OpenAI GPT-Live 1.1
+     * @description Full-duplex realtime voice model (Live API, WebRTC). Billed by session time, not by tokens.
+     */
+    public const string MODEL_OPENAI_GPT_LIVE_1_1 = 'OPENAI.GPT_LIVE_1_1';
+
+    /**
+     * @var string OpenAI GPT-Live 1
+     * @description The first GPT-Live model, replaced by GPT-Live 1.1; kept so sessions run on it keep their price.
+     */
+    public const string MODEL_OPENAI_GPT_LIVE_1 = 'OPENAI.GPT_LIVE_1';
+
+    /**
      * @var string Meta Llama 3.1 8B Instruct Model
      * @description Fast, efficient 8B model for text-based reasoning and structured outputs. Competitive with closed-source models, optimized for high-throughput tasks.
      * @usage Use for cost-sensitive applications like chatbots, text analysis, or structured data generation. 131K context, ideal for scalable deployments.

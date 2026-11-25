@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.8.3
+
+- **GPT-Live in the catalog.** `AIModel::MODEL_OPENAI_GPT_LIVE_1_1` (`OPENAI.GPT_LIVE_1_1`, wire id `gpt-live-1.1`) and
+  `MODEL_OPENAI_GPT_LIVE_1` (`OPENAI.GPT_LIVE_1`, `gpt-live-1`): `AUDIO`, priced by session second
+  (`costsPerSessionSecondInUSD` 0.05 / 60), no `agentTier`, so never a candidate of the automatic model choice.
+  `gpt-live-1` stays only so sessions run on it keep their price. An application that carried its own `gpt-live-*`
+  entries may drop them.
+- **New: `AIModelsService::getAIModelByExternalId(string $externalId, ?string $type = null): ?AIModel`** — the catalog
+  entry a provider knows by its wire id (first match in catalog order), so a caller holding a provider's model id
+  finds the entry and its price without the catalog's own name.
+- Tests.
+
 ## 3.8.2
 
 - **The price per session second is read for every model type.** `settings.costsPerSessionSecondInUSD` of an `AUDIO`

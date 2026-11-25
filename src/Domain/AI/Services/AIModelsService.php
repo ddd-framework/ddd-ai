@@ -327,6 +327,32 @@ class AIModelsService extends Service
     }
 
     /**
+     * The catalog model a provider knows as `$externalId` (the id on its wire, e.g. `gpt-live-1.1`); with `$type`, only
+     * a model of that type. A caller that holds a provider's model id (a voice provider's `model` setting) finds the
+     * catalog entry, and with it the price, without knowing the catalog's own name. Null when no entry matches; the
+     * first entry in catalog order wins.
+     */
+    public function getAIModelByExternalId(string $externalId, ?string $type = null): ?AIModel
+    {
+        $externalId = trim($externalId);
+        if ($externalId === '') {
+            return null;
+        }
+        foreach ((array)Config::get('AI.models') as $aiModelName => $aiModelConfig) {
+            if (!is_array($aiModelConfig) || ($aiModelConfig['externalId'] ?? null) !== $externalId) {
+                continue;
+            }
+            if ($type !== null && ($aiModelConfig['type'] ?? null) !== $type) {
+                continue;
+            }
+
+            return $this->createAIModelFromConfig((string)$aiModelName, $aiModelConfig);
+        }
+
+        return null;
+    }
+
+    /**
      * Returns AIModel by name
      * @param string $aiModelName
      * @return AIModel|null
