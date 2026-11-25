@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.8.1
+
+- Catalog: GPT-6 Luna and GPT-6.2 Sol state their reasoning carry-over (`capped` at 1,000) under
+  `agenticUseCase.previousReasoningByWireApi` for `AIModel::AGENT_WIRE_API_RESPONSES` instead of model-wide. Luna was
+  measured on the Responses API (the comparison arm ran over Chat Completions with carry-over off); Sol takes the same
+  value by decision without a measurement of its own. On Chat Completions (also the catalog default wire of both) the
+  agent's defaults now apply. Kimi K3.1 Pro stays model-wide. A host that wants the old behaviour sets
+  `previousReasoning` in its own `models.php` copy.
+
 ## 3.8.0
 
 - The carry-over of a model's own earlier reasoning per wire API, additive: `agenticUseCase.previousReasoningByWireApi`

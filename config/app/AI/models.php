@@ -1712,12 +1712,16 @@ return [
         'supportsForcedToolChoice' => true,
         'externalId' => 'gpt-6.2-sol',
         'agenticUseCase' => [
-            // The same reasoning family as GPT-6 Luna on the same wire, so the same carry-over; measured on Luna only:
-            // the more of its own earlier reasoning Luna sees, the more it reasons per call and the slower it answers,
-            // and a cap of 1,000 instead of 4,000 reasoning tokens kept the first call of a turn short at equal quality.
-            'previousReasoning' => [
-                'carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED,
-                'capTokens' => 1000,
+            // Stated for the Responses API, like GPT-6 Luna: the same reasoning family, so the same carry-over by
+            // decision, without a measurement of its own. Luna was measured on the Responses API: the more of its own
+            // earlier reasoning it sees, the more it reasons per call and the slower it answers, and a cap of 1,000
+            // instead of 4,000 reasoning tokens kept the first call of a turn short at equal quality. On another wire
+            // (Chat Completions) the agent's defaults apply.
+            'previousReasoningByWireApi' => [
+                AIModel::AGENT_WIRE_API_RESPONSES => [
+                    'carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED,
+                    'capTokens' => 1000,
+                ],
             ],
         ],
         'openRouterExternalId' => 'openai/gpt-6.2-sol',
@@ -1778,15 +1782,19 @@ return [
         // empty-turn stall class). Re-tune only if an eval shows it under-reasons.
         'agenticUseCase' => [
             'reasoningEffort' => 'low',
-            // Measured in several test series: the more of its own earlier reasoning Luna sees, the more it reasons per
-            // call, and responses get slow (overthinking). Median reasoning per call by the earlier reasoning in view:
-            // 0 at none, 389 at 501–2,000, 743 at 5,001–10,000, 874 above 10,000 tokens; latency follows reasoning
-            // (~22 s per 1,000 output tokens). Without any carry-over it repeats its own reads and writes (pass rate
-            // 10/19). A cap of 1,000 instead of 4,000 cut the first call of a turn from a median 276 to 75 reasoning
-            // tokens and kept its p90 latency under 7 s at equal quality.
-            'previousReasoning' => [
-                'carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED,
-                'capTokens' => 1000,
+            // Measured on the Responses API, so stated for that wire (the comparison arm ran over Chat Completions
+            // with carry-over off). In several test series: the more of its own earlier reasoning Luna sees, the more
+            // it reasons per call, and responses get slow (overthinking). Median reasoning per call by the earlier
+            // reasoning in view: 0 at none, 389 at 501–2,000, 743 at 5,001–10,000, 874 above 10,000 tokens; latency
+            // follows reasoning (~22 s per 1,000 output tokens). Without any carry-over it repeats its own reads and
+            // writes (pass rate 10/19). A cap of 1,000 instead of 4,000 cut the first call of a turn from a median 276
+            // to 75 reasoning tokens and kept its p90 latency under 7 s at equal quality. On another wire (Chat
+            // Completions) the agent's defaults apply.
+            'previousReasoningByWireApi' => [
+                AIModel::AGENT_WIRE_API_RESPONSES => [
+                    'carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED,
+                    'capTokens' => 1000,
+                ],
             ],
         ],
         'openRouterExternalId' => 'openai/gpt-6-luna',

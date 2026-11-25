@@ -21,11 +21,11 @@ class PreviousReasoningCarryOverCatalogTest extends TestCase
         $this->assertNull($kimi->agenticUseCase?->reasoningEffort);
     }
 
-    public function testLunaAndSolCapTheirReasoningAtOneThousandTokens(): void
+    public function testLunaAndSolCapTheirReasoningAtOneThousandTokensOnTheResponsesApi(): void
     {
         foreach ([AIModel::MODEL_OPENAI_GPT6_LUNA, AIModel::MODEL_OPENAI_GPT6_2_SOL] as $modelName) {
             $aiModel = (new AIModelsService())->getAIModelByName($modelName);
-            $previousReasoning = $aiModel?->getAgenticPreviousReasoningCarryOver();
+            $previousReasoning = $aiModel?->getAgenticPreviousReasoningCarryOver(AIModel::AGENT_WIRE_API_RESPONSES);
 
             $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_CAPPED, $previousReasoning?->getCarryOver(), $modelName);
             $this->assertSame(1000, $previousReasoning->capTokens, $modelName);
@@ -34,6 +34,28 @@ class PreviousReasoningCarryOverCatalogTest extends TestCase
             $this->assertNull($previousReasoning->headroomTokensAfterCut, $modelName);
         }
         $this->assertSame('low', (new AIModelsService())->getAIModelByName(AIModel::MODEL_OPENAI_GPT6_LUNA)?->agenticUseCase?->reasoningEffort);
+    }
+
+    public function testLunaAndSolLeaveChatCompletionsToTheAgentsDefault(): void
+    {
+        foreach ([AIModel::MODEL_OPENAI_GPT6_LUNA, AIModel::MODEL_OPENAI_GPT6_2_SOL] as $modelName) {
+            $aiModel = (new AIModelsService())->getAIModelByName($modelName);
+
+            $this->assertNotNull($aiModel, $modelName);
+            $this->assertNull($aiModel->getAgenticPreviousReasoningCarryOver(AIModel::AGENT_WIRE_API_CHAT_COMPLETIONS), $modelName);
+            $this->assertNull($aiModel->agenticUseCase?->previousReasoning, $modelName . ': no model-wide value');
+            $this->assertSame(AIModel::AGENT_WIRE_API_CHAT_COMPLETIONS, $aiModel->getAgentWireApi(), $modelName);
+            $this->assertNull($aiModel->getAgenticPreviousReasoningCarryOver(), $modelName . ': the catalog wire is Chat Completions');
+        }
+    }
+
+    public function testKimiK31ProKeepsItsValueOnEveryWire(): void
+    {
+        $kimi = (new AIModelsService())->getAIModelByName(AIModel::MODEL_MOONSHOT_KIMI_K3_1_PRO);
+
+        foreach (AIModel::CATALOG_AGENT_WIRE_APIS as $agentWireApi) {
+            $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_CURRENT_TURN, $kimi?->getAgenticPreviousReasoningCarryOver($agentWireApi)?->getCarryOver(), $agentWireApi);
+        }
     }
 
     public function testOpusCarriesEveryEarlierThinkingBlock(): void
