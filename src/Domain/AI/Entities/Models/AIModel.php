@@ -1014,10 +1014,19 @@ class AIModel extends Entity
         return $this->supportsParallelToolCalls !== false;
     }
 
-    /** The catalog's policy for sending the model's own reasoning of earlier calls back (`agenticUseCase.previousReasoning`), null when it sets none */
-    public function getAgenticPreviousReasoningCarryOver(): ?AIModelPreviousReasoningCarryOver
+    /**
+     * The catalog's policy for sending the model's own reasoning of earlier calls back on a call over `$agentWireApi`:
+     * `agenticUseCase.previousReasoningByWireApi.<wire api>` when the entry names one for that wire API, else the
+     * model-wide `agenticUseCase.previousReasoning`; null when it sets neither. The one reader of the value: a caller
+     * passes the wire API the call actually speaks (after any fallback), since a value may hold on one wire only.
+     *
+     * @param string|null $agentWireApi The wire API of the call (one of {@see self::CATALOG_AGENT_WIRE_APIS} in any case,
+     *      or a wire API this package does not know, as written); null = the model's catalog wire API
+     *      ({@see getAgentWireApi()})
+     */
+    public function getAgenticPreviousReasoningCarryOver(?string $agentWireApi = null): ?AIModelPreviousReasoningCarryOver
     {
-        return $this->agenticUseCase?->previousReasoning;
+        return $this->agenticUseCase?->getPreviousReasoningForAgentWireApi($agentWireApi ?? $this->getAgentWireApi());
     }
 
     /** The total timeout of one HTTP attempt to this model in seconds (the catalog's value, else the default) */

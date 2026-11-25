@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.8.0
+
+- The carry-over of a model's own earlier reasoning per wire API, additive: `agenticUseCase.previousReasoningByWireApi`
+  (`'<wire api>' => <same shape as agenticUseCase.previousReasoning>`, keys `AIModel::AGENT_WIRE_API_*`; value objects
+  `AIModelWireApiPreviousReasoningCarryOver` in the set `AIModelWireApiPreviousReasoningCarryOvers` on
+  `AIModelAgenticUseCaseConfig::$previousReasoningByWireApi`). For a value measured on one wire only: on a call over that
+  wire it replaces the model-wide `previousReasoning` as a whole; on every other wire the model-wide value applies. An
+  entry without the key behaves as before.
+- The one resolver: `AIModel::getAgenticPreviousReasoningCarryOver(?string $agentWireApi = null)` (also
+  `AIModelAgenticUseCaseConfig::getPreviousReasoningForAgentWireApi()`). An agent passes the wire API the call speaks
+  after any fallback; without an argument the model's catalog `agentWireApi` decides, so existing callers keep working.
+- Catalog load: a known wire key counts in any case; an unknown key is kept as written (a wire a newer agent speaks)
+  and logged as a warning; a key that is no string, a value that is no array or one without a valid field is skipped.
+  Nothing throws.
+- Catalog: Claude Opus 5.5 `all` moved under `messages` (measured on the Messages API only); on another wire the
+  agent's defaults apply. Kimi K3.1 Pro (`currentTurn`), GPT-6 Luna and GPT-6.2 Sol (`capped` at 1,000) stay model-wide:
+  the catalog does not record the wire they were measured on. A host that knows it states them per wire in its own
+  `models.php` copy.
+
 ## 3.7.0
 
 - Booking of session seconds (a realtime voice session billed by time), additive: `AISessionUsageService::recordSessionSeconds(AIModelCall, float $seconds, ?MoneyAmount $costsPerSessionSecond)`

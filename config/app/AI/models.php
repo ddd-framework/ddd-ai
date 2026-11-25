@@ -1191,11 +1191,14 @@ return [
         'externalId' => 'claude-opus-5-5',
         'agenticUseCase' => [
             'reasoningEffort' => 'high',
-            // On the Messages API: with its earlier thinking replayed, Opus thinks less per call (107–115 tokens instead
-            // of 183 without replay; 8 runs per arm). Replayed thinking is read from the prompt cache at a fraction of
-            // the input price, while removing earlier thinking changes the history from the first removed step on and
-            // rewrites the cache from there. So no cut: the thinking leaves only with a compaction.
-            'previousReasoning' => ['carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL],
+            // Measured on the Messages API only, so stated for that wire: with its earlier thinking replayed, Opus
+            // thinks less per call (107–115 tokens instead of 183 without replay; 8 runs per arm). Replayed thinking is
+            // read from the prompt cache at a fraction of the input price, while removing earlier thinking changes the
+            // history from the first removed step on and rewrites the cache from there. So no cut: the thinking leaves
+            // only with a compaction. On another wire (a Chat Completions fallback) the agent's defaults apply.
+            'previousReasoningByWireApi' => [
+                AIModel::AGENT_WIRE_API_MESSAGES => ['carryOver' => AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL],
+            ],
         ],
         'openRouterExternalId' => 'anthropic/claude-opus-5.5',
         'isReasoningModel' => true,

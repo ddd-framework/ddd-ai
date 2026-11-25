@@ -13,6 +13,8 @@ use DDD\Domain\AI\Entities\Models\Settings\AILanguageModelSetting;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelAgenticUseCaseConfig;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelPreviousReasoningCarryOver;
 use DDD\Domain\AI\Entities\Models\Settings\AIModelProviderFilters;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelWireApiPreviousReasoningCarryOver;
+use DDD\Domain\AI\Entities\Models\Settings\AIModelWireApiPreviousReasoningCarryOvers;
 use DDD\Domain\AI\Entities\Models\Settings\PromptCacheWritePrice;
 use DDD\Domain\AI\Entities\Models\Settings\PromptCacheWritePrices;
 use DDD\Domain\AI\Entities\Models\Settings\RequestFeeVariant;
@@ -108,6 +110,10 @@ class AIModelsService extends Service
                 // whether and how far an agent sends the model's own reasoning of earlier calls back (null = its defaults)
                 is_array($agenticConfig['previousReasoning'] ?? null)
                     ? AIModelPreviousReasoningCarryOver::fromCatalogArray($agenticConfig['previousReasoning'])
+                    : null,
+                // the same per wire API, for a value that holds on one wire only (replaces the model-wide one there)
+                is_array($agenticConfig['previousReasoningByWireApi'] ?? null)
+                    ? $this->createWireApiPreviousReasoningCarryOversFromConfig($modelKey, $agenticConfig['previousReasoningByWireApi'])
                     : null,
             );
         }
@@ -320,6 +326,64 @@ class AIModelsService extends Service
      * @throws NotFoundException
      * @throws ReflectionException
      */
+    /**
+     * The carry-overs of a catalog block `agenticUseCase.previousReasoningByWireApi` (`'<wire api>' => <same shape as
+     * agenticUseCase.previousReasoning>`). A known wire API counts in any case ({@see AIModel::canonicalAgentWireApi()});
+     * an unknown one is kept as written, so a host can name a wire API a newer agent speaks, and logged as a warning
+     * (it applies only to a call over exactly that wire API). A key that is no string, a value that is no array and a
+     * value without a valid field are skipped (the last two like the model-wide block). Null when nothing is left.
+     *
+     * @param string $modelKey The model of the catalog entry, for the warning
+     * @param array<mixed, mixed> $previousReasoningByWireApiConfig
+     */
+    protected function createWireApiPreviousReasoningCarryOversFromConfig(
+        string $modelKey,
+        array $previousReasoningByWireApiConfig
+    ): ?AIModelWireApiPreviousReasoningCarryOvers {
+        $aiModelWireApiPreviousReasoningCarryOvers = new AIModelWireApiPreviousReasoningCarryOvers();
+        foreach ($previousReasoningByWireApiConfig as $agentWireApi => $previousReasoningConfig) {
+            $normalizedAgentWireApi = is_string($agentWireApi)
+                ? AIModelWireApiPreviousReasoningCarryOvers::normalizeAgentWireApi($agentWireApi)
+                : '';
+            if ($normalizedAgentWireApi === '') {
+                $this->logCatalogWarning(
+                    '[AIModelsService] agenticUseCase.previousReasoningByWireApi has a key that names no wire API — skipped',
+                    ['model' => $modelKey, 'key' => $agentWireApi]
+                );
+                continue;
+            }
+            if (!in_array($normalizedAgentWireApi, AIModel::CATALOG_AGENT_WIRE_APIS, true)) {
+                $this->logCatalogWarning(
+                    '[AIModelsService] agenticUseCase.previousReasoningByWireApi names a wire API this package does not know — kept, applies only to a call over exactly this wire API',
+                    ['model' => $modelKey, 'agentWireApi' => $normalizedAgentWireApi, 'knownWireApis' => AIModel::CATALOG_AGENT_WIRE_APIS]
+                );
+            }
+            $previousReasoning = is_array($previousReasoningConfig)
+                ? AIModelPreviousReasoningCarryOver::fromCatalogArray($previousReasoningConfig)
+                : null;
+            if ($previousReasoning === null) {
+                continue;
+            }
+            $aiModelWireApiPreviousReasoningCarryOver = new AIModelWireApiPreviousReasoningCarryOver($normalizedAgentWireApi, $previousReasoning);
+            $aiModelWireApiPreviousReasoningCarryOvers->add($aiModelWireApiPreviousReasoningCarryOver);
+        }
+        return $aiModelWireApiPreviousReasoningCarryOvers->count() > 0 ? $aiModelWireApiPreviousReasoningCarryOvers : null;
+    }
+
+    /**
+     * Logs a warning about a catalog value. Loading the catalog without a container still answers.
+     *
+     * @param string $message
+     * @param array<string, mixed> $context
+     */
+    protected function logCatalogWarning(string $message, array $context): void
+    {
+        try {
+            DDDService::instance()->getLogger()->warning($message, $context);
+        } catch (Throwable) {
+        }
+    }
+
     public function getAIModelByName(string $aiModelName): ?AIModel
     {
         $configs = Config::get('AI.models');

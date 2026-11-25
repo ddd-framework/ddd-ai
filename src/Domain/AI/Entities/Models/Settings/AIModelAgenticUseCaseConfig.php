@@ -44,11 +44,33 @@ class AIModelAgenticUseCaseConfig extends ValueObject
      */
     public ?AIModelPreviousReasoningCarryOver $previousReasoning = null;
 
-    public function __construct(?string $reasoningEffort = null, ?float $temperature = null, ?AIModelPreviousReasoningCarryOver $previousReasoning = null)
-    {
+    /**
+     * @var AIModelWireApiPreviousReasoningCarryOvers|null The carry-over per wire API (catalog key
+     *      `agenticUseCase.previousReasoningByWireApi`): on a call over a wire API named here it replaces
+     *      {@see $previousReasoning}; null = the model-wide value on every wire. Read through
+     *      {@see \DDD\Domain\AI\Entities\Models\AIModel::getAgenticPreviousReasoningCarryOver()}.
+     */
+    public ?AIModelWireApiPreviousReasoningCarryOvers $previousReasoningByWireApi = null;
+
+    public function __construct(
+        ?string $reasoningEffort = null,
+        ?float $temperature = null,
+        ?AIModelPreviousReasoningCarryOver $previousReasoning = null,
+        ?AIModelWireApiPreviousReasoningCarryOvers $previousReasoningByWireApi = null
+    ) {
         $this->reasoningEffort = $reasoningEffort;
         $this->temperature = $temperature;
         $this->previousReasoning = $previousReasoning;
+        $this->previousReasoningByWireApi = $previousReasoningByWireApi;
         parent::__construct();
+    }
+
+    /**
+     * The carry-over on a call over `$agentWireApi`: the value of {@see $previousReasoningByWireApi} for that wire API
+     * when it names one, else the model-wide {@see $previousReasoning}; null when neither is set.
+     */
+    public function getPreviousReasoningForAgentWireApi(string $agentWireApi): ?AIModelPreviousReasoningCarryOver
+    {
+        return $this->previousReasoningByWireApi?->getPreviousReasoningForAgentWireApi($agentWireApi) ?? $this->previousReasoning;
     }
 }

@@ -40,7 +40,9 @@ class PreviousReasoningCarryOverCatalogTest extends TestCase
     {
         $opus = (new AIModelsService())->getAIModelByName(AIModel::MODEL_ANTHROPIC_CLAUDE_OPUS_5_5);
 
-        $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL, $opus?->getAgenticPreviousReasoningCarryOver()?->getCarryOver());
+        $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL, $opus?->getAgenticPreviousReasoningCarryOver()?->getCarryOver(), 'the catalog wire is messages');
+        $this->assertSame(AIModelPreviousReasoningCarryOver::CARRY_OVER_ALL, $opus->getAgenticPreviousReasoningCarryOver(AIModel::AGENT_WIRE_API_MESSAGES)?->getCarryOver());
+        $this->assertNull($opus->getAgenticPreviousReasoningCarryOver(AIModel::AGENT_WIRE_API_CHAT_COMPLETIONS), 'measured on messages only');
         $this->assertSame('high', $opus->agenticUseCase->reasoningEffort);
     }
 
