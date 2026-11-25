@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.7.0
+
+- Booking of session seconds (a realtime voice session billed by time), additive: `AISessionUsageService::recordSessionSeconds(AIModelCall, float $seconds, ?MoneyAmount $costsPerSessionSecond)`
+  hands the usage to `AIModelCallUsageRecorderService` like a priced token answer; `AIModelCallUsage::$sessionSeconds`
+  (0 for token calls), the catalog key `settings.costsPerSessionSecondInUSD` for language and image models
+  (`AIModelSetting::$costsPerSessionSecond`, `getEstimatedCostsForSessionSeconds()`). A session without a price books
+  nothing. A host recorder that books into budget pots reads `sessionSeconds` and `costs` as it reads tokens.
+
 ## 3.6.0
 
 - **Changed:** the carry-over of a model's own earlier reasoning moved into the agentic block of the catalog:

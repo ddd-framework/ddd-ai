@@ -288,6 +288,11 @@ Stage order for a language model: `refuseModelCallWithoutUsageScopeOrEnvelope` â
 - Who pays: `$argusRepo->billAICostsTo($account, $entityWithinAccount)` before the load; the gate and recorder read it
   from `AIModelCall::$accountBilledForAICosts` / `$entityWithinAccountBilledForAICosts`.
 - The recorder gets `AIModelCallUsage` (input/output/cached/cache-write/reasoning tokens, web searches, `costs`).
+- **Session seconds** (a realtime voice session billed by time): `AISessionUsageService::recordSessionSeconds($aiModelCall,
+  $seconds, ?$costsPerSessionSecond)` books through the same recorder; the usage carries `sessionSeconds` and
+  `costs` = seconds Ã— the catalog's `costsPerSessionSecondInUSD` (`AIModelSetting::$costsPerSessionSecond`) or the
+  passed price. Unpriced = nothing booked (`costs` null on the returned usage). Book inside the session's envelope,
+  under its usage scope and billed account; a long session may book in slices.
 - `enforceBudget: false` on the attribute skips the budget stages (infrastructure calls); usage is still recorded.
 
 ## Usage envelopes, budget bypass and booked costs (3.2)

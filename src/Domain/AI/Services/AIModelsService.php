@@ -283,6 +283,11 @@ class AIModelsService extends Service
                 }
             }
 
+            if (isset($settings['costsPerSessionSecondInUSD'])) {
+                $aiModelSetting->costsPerSessionSecond = new MoneyAmount(
+                    (float)$settings['costsPerSessionSecondInUSD'], 'USD'
+                );
+            }
             $aiModel->settings = $aiModelSetting;
         } elseif ($aiModel->type === AIModel::TYPE_IMAGE) {
             $settings = $modelConfig['settings'] ?? [];
@@ -294,6 +299,11 @@ class AIModelsService extends Service
                 );
             }
 
+            if (isset($settings['costsPerSessionSecondInUSD'])) {
+                $aiModelSetting->costsPerSessionSecond = new MoneyAmount(
+                    (float)$settings['costsPerSessionSecondInUSD'], 'USD'
+                );
+            }
             $aiModel->settings = $aiModelSetting;
         }
 

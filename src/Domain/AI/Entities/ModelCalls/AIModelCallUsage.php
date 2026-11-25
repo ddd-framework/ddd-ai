@@ -37,6 +37,9 @@ class AIModelCallUsage extends ValueObject
     /** @var MoneyAmount|null The cost of the call; null while it is not priced yet */
     public ?MoneyAmount $costs = null;
 
+    /** @var float Seconds of a session billed by time (a realtime voice session); 0 for a call billed by tokens */
+    public float $sessionSeconds = 0.0;
+
     public function __construct(
         ?int $inputTokens = null,
         ?int $outputTokens = null,
@@ -46,6 +49,7 @@ class AIModelCallUsage extends ValueObject
         int $reasoningOutputTokens = 0,
         int $webSearchCallCount = 0,
         ?MoneyAmount $costs = null,
+        float $sessionSeconds = 0.0,
     ) {
         $this->inputTokens = $inputTokens;
         $this->outputTokens = $outputTokens;
@@ -55,6 +59,7 @@ class AIModelCallUsage extends ValueObject
         $this->reasoningOutputTokens = $reasoningOutputTokens;
         $this->webSearchCallCount = $webSearchCallCount;
         $this->costs = $costs;
+        $this->sessionSeconds = $sessionSeconds;
         parent::__construct();
     }
 }
