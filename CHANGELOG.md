@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.10.0
+
+- **The EU "AI" label on an image.** `DDD\Domain\AI\Services\AIImageLabelStamper` stamps the Commission's AI icon
+  on a JPEG or PNG (corner, size, margin and colour from the config `AI.AIImageLabelStamp`, icons under
+  `config/app/AI/AIImageLabelIcons`) and writes the AI tag; `DDD\Domain\AI\Entities\MediaItems\AIImageIptcTag` writes
+  the IPTC digital source type as an XMP packet into an image that carries neither C2PA nor XMP; `AIImageKind`,
+  `AIImageLabelVariant`, `AIImageLabelStampSettings`, `AIImageLabelIconSquare`. The stamper decodes through
+  `RasterImageDecoder::readBlob()`. Which image gets a label (a region rule, a switch) stays the application's policy.
+- Floor `mgamadeus/ddd` ^3.49.0 (`ImageMetadata`, `ImageFileStructure`, `ExifOrientation`).
+
 ## 3.9.1
 
 - Fix: `ArgusAIImageModelTrait` reflects on its own. Its property defaults read the trait's constants through `self::`,
