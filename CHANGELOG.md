@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.9.0
+
+- **AI cost ledger.** New entity `DDD\Domain\AI\Entities\UsageLogs\AIUsageLog` (table `AIUsageLogs`, set `AIUsageLogs`,
+  repos `DBAIUsageLog(s)`) and `AIUsageLogsService`: one row per booked cost with the account, feature, usage and
+  envelope scope, source, model, prompt, tokens (input, output, cached, cache-write, reasoning), web searches, session
+  seconds, cost in USD and initiator. The module's `AIModelCallUsageRecorderService` books into it when the config
+  `AI.usageLog.enabled` is true (default false, so nothing changes for an application without the table) and reports
+  the cost to the open envelope (`recordBookedCost`). A row the ledger cannot write (table missing, database gone) is
+  logged as an error; the model call that caused the cost is never failed by it. `recordFee()` books a cost that is no
+  model call. Override points: `attributeUsageLog()` (more columns with a same-path entity subclass, same table),
+  `findFeature()`, `findAccountIdConfiningTheReader()` (default: an admin with access to all resources reads every
+  row, any other account its own). Run `app:generate-doctrine-models-for-entities` for `DBAIUsageLogModel` and create
+  the table before switching it on.
+- **`AIModelCall::$subjectEntity`**: the record a call works for (a conversation, a voice call), for the usage record
+  only; the gate never reads it. A repo names it with `ArgusAILanguageModelTrait::getSubjectEntityForUsageRecording()`
+  (default none), whoever builds a call (a voice session) passes it to the constructor.
+- Tests: the ledger off by default, every priced call booked when on and a call without costs not, a ledger that
+  cannot write logged without failing the call, the feature default. Module skill: "The AI cost ledger".
+
 ## 3.8.3
 
 - **GPT-Live in the catalog.** `AIModel::MODEL_OPENAI_GPT_LIVE_1_1` (`OPENAI.GPT_LIVE_1_1`, wire id `gpt-live-1.1`) and

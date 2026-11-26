@@ -713,7 +713,17 @@ trait ArgusAILanguageModelTrait
             enforceBudget: $this->isAIBudgetEnforcedForOperation(),
             promptVariantName: $promptVariantName,
             promptVariantNameFailed: $promptVariantNameFailed,
+            subjectEntity: $forUsageRecording ? $this->getSubjectEntityForUsageRecording() : null,
         );
+    }
+
+    /**
+     * The record this call works for, for the usage record ({@see AIModelCall::$subjectEntity}): a conversation, a
+     * ticket. Default: none. Read only when the usage is recorded, never by the gate.
+     */
+    protected function getSubjectEntityForUsageRecording(): ?Entity
+    {
+        return null;
     }
 
     /** The application's gate for model calls (the module default lets every call through). */

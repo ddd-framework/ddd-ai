@@ -298,6 +298,25 @@ Stage order for a language model: `refuseModelCallWithoutUsageScopeOrEnvelope` â
   under its usage scope and billed account; a long session may book in slices.
 - `enforceBudget: false` on the attribute skips the budget stages (infrastructure calls); usage is still recorded.
 
+### The AI cost ledger (3.9)
+
+`AI.usageLog.enabled` (config `config/app/AI/usageLog.php`, default `false`) makes the module's recorder book every
+priced call and slice of session seconds into `AIUsageLog` (table `AIUsageLogs`, `AIUsageLogsService`) and report it
+to the open envelope (`recordBookedCost`). Switch it on only after the table exists (generate the model with
+`app:generate-doctrine-models-for-entities`, create the table through the schema diff). A row the ledger cannot write
+is logged as an error; the call that caused the cost is never failed by it.
+
+- Columns: account (billed, else the envelope's, else the signed-in one), feature, usage and envelope scope, source
+  (short repo class name), model, prompt, tokens, web searches, session seconds, `costInUSD`, `initiatedBy`.
+- `AIModelCall::$subjectEntity`: the record a call works for (a conversation, a voice call), for the ledger only; a
+  repo names it in `getSubjectEntityForUsageRecording()` (default none), a builder of a call passes it.
+- `recordFee()`: a cost that is no model call (web search requests).
+- Override points (same-path subclass of `AIUsageLogsService`): `attributeUsageLog()` (more columns: a same-path
+  subclass of `AIUsageLog`, same table), `findFeature()` (the application's feature names),
+  `findAccountIdConfiningTheReader()` (default: an admin with access to all resources reads every row, any other
+  account its own). No account writes a row with its own rights; `recordUsage()` writes with the rights lifted.
+- An application with budget pots of its own keeps its same-path recorder subclass and calls the parent first.
+
 ## Usage envelopes, budget bypass and booked costs (3.2)
 
 An envelope groups every AI call made while it is open (one request, one job, one turn); envelopes nest.

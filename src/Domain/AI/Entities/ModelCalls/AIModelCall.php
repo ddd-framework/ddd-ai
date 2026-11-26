@@ -47,6 +47,14 @@ class AIModelCall extends ValueObject
     /** @var bool True when reading the prompt variant name for the usage record failed */
     public bool $promptVariantNameFailed = false;
 
+    /**
+     * @var Entity|null The record the call works for, for the usage record (a conversation, a voice call): what a cost
+     * ledger files the call under besides the billed account. Not a billing party: the gate never reads it. Set by the
+     * repo ({@see \DDD\Domain\AI\Repo\Argus\Traits\ArgusAILanguageModelTrait::getSubjectEntityForUsageRecording()}) or
+     * by whoever builds the call (a voice session); null when the call works for no single record.
+     */
+    public ?Entity $subjectEntity = null;
+
     public function __construct(
         string $argusClass,
         ?string $aiUsageScope = null,
@@ -57,6 +65,7 @@ class AIModelCall extends ValueObject
         bool $enforceBudget = true,
         ?string $promptVariantName = null,
         bool $promptVariantNameFailed = false,
+        ?Entity $subjectEntity = null,
     ) {
         $this->argusClass = $argusClass;
         $this->aiUsageScope = $aiUsageScope;
@@ -67,6 +76,7 @@ class AIModelCall extends ValueObject
         $this->enforceBudget = $enforceBudget;
         $this->promptVariantName = $promptVariantName;
         $this->promptVariantNameFailed = $promptVariantNameFailed;
+        $this->subjectEntity = $subjectEntity;
         parent::__construct();
     }
 }
