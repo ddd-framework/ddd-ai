@@ -30,13 +30,13 @@ trait ArgusAIImageModelTrait
     public const int DEFAULT_NUMBER_OF_IMAGES = 1;
 
     /** @var int Width of the image */
-    public int $width = self::DEFAULT_WIDTH;
+    public int $width = 1024;
 
     /** @var int Height of the image */
-    public int $height = self::DEFAULT_HEIGHT;
+    public int $height = 768;
 
     /** @var int Number of images to generate */
-    public int $numberOfImages = self::DEFAULT_NUMBER_OF_IMAGES;
+    public int $numberOfImages = 1;
 
     /**
      * @throws NotFoundException

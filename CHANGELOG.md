@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.9.1
+
+- Fix: `ArgusAIImageModelTrait` reflects on its own. Its property defaults read the trait's constants through `self::`,
+  which PHP refuses when the trait itself is reflected ("Cannot access trait constant self::DEFAULT_WIDTH directly");
+  Symfony's debug resource tracking does that when the package lies outside the application's vendor directory (a
+  path repository, a linked checkout), and the container build died. The defaults are literals now (unchanged values);
+  a test reflects every trait of the package.
+
 ## 3.9.0
 
 - **AI cost ledger.** New entity `DDD\Domain\AI\Entities\UsageLogs\AIUsageLog` (table `AIUsageLogs`, set `AIUsageLogs`,
